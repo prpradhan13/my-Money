@@ -1,3 +1,4 @@
+import BillFlatList from "@/src/components/home/BillFlatList";
 import TransactionList from "@/src/components/home/TransactionList";
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
 import AddMoneyModal from "@/src/components/modal/AddMoneyModal";
@@ -6,23 +7,46 @@ import { useTransactionStore } from "@/src/store/transactionStore";
 import { formatCurrency } from "@/src/utils/helperFunction";
 import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
 import { useGetUserAllPurchases } from "@/src/utils/query/purchaseQuery";
+import { useGetUpcomingBills } from "@/src/utils/query/upcomingBillQuery";
 import { useGetUserDetails } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
+import React from "react";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const [refreshing, setRefreshing] = useState(false);
   const [addMoneyModalVisible, setAddMoneyModalVisible] = useState(false);
 
   const { data: userData, isLoading: userDataLoading } = useGetUserDetails();
-  const { data: addedMoneyData, isLoading: addedMoneyDataLoading } =
-    useGetUserAllAddedMoney();
+  const {
+    data: addedMoneyData,
+    isLoading: addedMoneyDataLoading,
+    refetch: refetchAddedMoneyData,
+  } = useGetUserAllAddedMoney();
+  const {
+    data: billData,
+    isLoading: billDataLoading,
+    refetch: refetchBillData,
+  } = useGetUpcomingBills();
+  const {
+    data: purchasesData,
+    isLoading: purchasesLoading,
+    refetch: refetchPurchasesData,
+  } = useGetUserAllPurchases();
+
   const { allExpenses, userAllTransactionAmount, setAllExpenses } =
     useTransactionStore();
-  const { data: purchasesData, isLoading: purchasesLoading } =
-    useGetUserAllPurchases();
   const { userTotalBalance, setUserBalance } = useAddedMoneyStore();
 
   useEffect(() => {
@@ -37,7 +61,12 @@ export default function HomeScreen() {
     }
   }, [addedMoneyData, setUserBalance]);
 
-  if (userDataLoading || addedMoneyDataLoading || purchasesLoading)
+  if (
+    userDataLoading ||
+    addedMoneyDataLoading ||
+    purchasesLoading ||
+    billDataLoading
+  )
     return <DefaultLoader />;
 
   if (!userData) {
@@ -51,78 +80,67 @@ export default function HomeScreen() {
   const userRestBalance =
     (userTotalBalance || 0) - (userAllTransactionAmount || 0);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refetchBillData(),
+      refetchPurchasesData(),
+      refetchAddedMoneyData(),
+    ]);
+    setRefreshing(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.headerContainer}>
-          <View>
-            <Text style={styles.greetingText}>Hii,</Text>
-            <Text style={styles.userNameText}>{userData.full_name}</Text>
-          </View>
-
-          <Feather name="bell" size={24} color={"#fff"} />
-        </View>
-
-        <View style={styles.balanceContainer}>
-          <View>
-            <Text style={styles.balanceLabel}>Total Savings</Text>
-            <Text style={styles.balanceAmount}>
-              {formatCurrency(userRestBalance ?? 0)}
-            </Text>
-            <Link href={"/upcomingBills"} asChild>
-              <Text
-                style={{
-                  color: "#fff",
-                  fontSize: 14,
-                  fontWeight: "500",
-                  backgroundColor: "#000",
-                  padding: 8,
-                  borderRadius: 8,
-                  marginTop: 8,
-                }}
-              >
-                Upcoming Bills
-              </Text>
-            </Link>
-          </View>
-
-          <Pressable
-            onPress={() => setAddMoneyModalVisible(true)}
-            style={styles.addButton}
-          >
-            <Feather name="plus" color={"#fff"} size={26} />
-          </Pressable>
-        </View>
-
-        <View style={styles.transactionsContainer}>
-          <View style={styles.transactionsHeader}>
-            <Text style={styles.transactionsTitle}>Transactions</Text>
-            <Link href={"/allTransactions"} asChild>
-              <Text style={styles.seeAllText}>See all</Text>
-            </Link>
-          </View>
-
-          <View style={styles.transactionsList}>
-            {!allExpenses || allExpenses.length === 0 ? (
+      <FlatList
+        data={allExpenses?.slice(0, 10)}
+        keyExtractor={(item) => item.id || item.item_name + item.created_at}
+        renderItem={({ item }) => <TransactionList transaction={item} />}
+        ListHeaderComponent={
+          <>
+            <View style={styles.headerContainer}>
               <View>
-                <Text style={styles.noTransactionsText}>No Transactions</Text>
+                <Text style={styles.greetingText}>Hii,</Text>
+                <Text style={styles.userNameText}>{userData.full_name}</Text>
               </View>
-            ) : (
-              allExpenses
-                .slice(0, 10)
-                .map((transaction) => (
-                  <TransactionList
-                    key={
-                      transaction.id ||
-                      transaction.item_name + transaction.created_at
-                    }
-                    transaction={transaction}
-                  />
-                ))
-            )}
-          </View>
-        </View>
-      </ScrollView>
+              <Feather name="bell" size={24} color={"#fff"} />
+            </View>
+
+            <View style={styles.balanceContainer}>
+              <View>
+                <Text style={styles.balanceLabel}>Total Savings</Text>
+                <Text style={styles.balanceAmount}>
+                  {formatCurrency(userRestBalance ?? 0)}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => setAddMoneyModalVisible(true)}
+                style={styles.addButton}
+              >
+                <Feather name="plus" color={"#fff"} size={26} />
+              </Pressable>
+            </View>
+
+            {billData && <BillFlatList bills={billData} />}
+
+            <View style={styles.transactionsHeader}>
+              <Text style={styles.transactionsTitle}>Transactions</Text>
+              <Link href={"/allTransactions"} asChild>
+                <Text style={styles.seeAllText}>See all</Text>
+              </Link>
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          <Text style={styles.noTransactionsText}>No Transactions</Text>
+        }
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      />
 
       {addMoneyModalVisible && (
         <View style={styles.modalContainer}>

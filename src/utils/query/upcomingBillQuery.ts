@@ -3,6 +3,8 @@ import { UpcomingBillType } from "@/src/types/upcomingBill.type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorToast, successToast } from "../helperFunction";
 import { supabase } from "../lib/supabase";
+import { PurchaseDetailsType } from "@/src/types/purchase.type";
+import { router } from "expo-router";
 
 export const useGetUpcomingBills = () => {
   const { user } = useAuthStore();
@@ -71,22 +73,57 @@ export const useMarkBillAsPaid = () => {
   
   return useMutation({
     mutationFn: async (billId: string) => {
-      const { error } = await supabase
+      const { data: billData, error: billError } = await supabase
         .from("bill_instances")
         .update({ status: "paid" })
-        .eq("id", billId);
+        .eq("id", billId)
+        .select("*, bill_templates(id, category)")
+        .single();
 
-      if (error) {
-        errorToast(error.message);
-        throw new Error(error.message);
+      if (billError) {
+        errorToast(billError.message);
+        throw new Error(billError.message);
       }
+
+      const bill = billData as UpcomingBillType;
+
+      const { data: purchaseData, error: purchaseError } = await supabase
+        .from("purchase_details")
+        .insert({
+          user_id: userId,
+          category: bill.bill_templates.category,
+          item_name: bill.title,
+          quantity: 1,
+          total: bill.amount,
+          price: bill.amount,
+        })
+        .select("*")
+        .single();
+
+      if (purchaseError) {
+        errorToast(purchaseError.message);
+        throw new Error(purchaseError.message);
+      }
+
+      return purchaseData;
     },
-    onSuccess: () => {
+    onSuccess: (returnedData) => {
       queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
+      queryClient.setQueryData(
+        ["userAllPurchase", userId],
+        (old: PurchaseDetailsType[]) => {
+          if (!old && returnedData) return [returnedData];
+          if (returnedData) return [returnedData, ...old];
+          return old;
+        }
+      );
+
+      router.replace("/(main)/(tabs)");
       successToast("Bill marked as paid");
     },
-    onError: () => {
+    onError: (error) => {
       errorToast("Failed to mark bill as paid");
+      console.log("error", error);
     },
   });
 };
