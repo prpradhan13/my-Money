@@ -11,13 +11,11 @@ import { useGetUpcomingBills } from "@/src/utils/query/upcomingBillQuery";
 import { useGetUserDetails } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
