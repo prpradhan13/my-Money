@@ -1,13 +1,27 @@
-import { errorToast, infoToast, successToast } from '@/src/utils/helperFunction';
-import { supabase } from '@/src/utils/lib/supabase';
-import { signUpSchema, SignUpSchemaTypes } from '@/src/validations/auth';
-import Feather from '@expo/vector-icons/Feather';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  errorToast,
+  infoToast,
+  successToast,
+} from "@/src/utils/helperFunction";
+import { supabase } from "@/src/utils/lib/supabase";
+import { signUpSchema, SignUpSchemaTypes } from "@/src/validations/auth";
+import Feather from "@expo/vector-icons/Feather";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  ActivityIndicator,
+  AppState,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -35,7 +49,7 @@ const SignUpScreen = () => {
         supabase.auth.stopAutoRefresh();
       }
     });
-  
+
     return () => subscription.remove();
   }, []);
 
@@ -58,13 +72,13 @@ const SignUpScreen = () => {
       if (error) {
         errorToast(error.message || "Sign up Failed");
       } else if (!session) {
-        infoToast("Please check your inbox for email verification!")
+        infoToast("Please check your inbox for email verification!");
       } else {
         router.replace("/(main)/(tabs)");
-        successToast("Sign up successful")
+        successToast("Sign up successful");
       }
     } catch (err: unknown) {
-      errorToast("Internal server error")
+      errorToast("Internal server error");
       throw new Error(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
@@ -72,18 +86,16 @@ const SignUpScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.keyboardAvoidingView}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
       >
-        <SafeAreaView style={styles.container}>
-          <Text style={styles.title}>
-            Create an account
-          </Text>
+        <View style={styles.container}>
+          <Text style={styles.title}>Create an account</Text>
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Full name</Text>
@@ -103,7 +115,9 @@ const SignUpScreen = () => {
                   )}
                 />
               </View>
-              {errors.full_name && <Text style={styles.errorText}>{errors.full_name.message}</Text>}
+              {errors.full_name && (
+                <Text style={styles.errorText}>{errors.full_name.message}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
@@ -124,7 +138,9 @@ const SignUpScreen = () => {
                   )}
                 />
               </View>
-              {errors.username && <Text style={styles.errorText}>{errors.username.message}</Text>}
+              {errors.username && (
+                <Text style={styles.errorText}>{errors.username.message}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
@@ -146,7 +162,9 @@ const SignUpScreen = () => {
                   )}
                 />
               </View>
-              {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
+              {errors.email && (
+                <Text style={styles.errorText}>{errors.email.message}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
@@ -195,11 +213,11 @@ const SignUpScreen = () => {
               )}
             </Pressable>
           </View>
-        </SafeAreaView>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
 export default SignUpScreen;
 
@@ -212,17 +230,17 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
     gap: 16,
     marginTop: 40,
   },
@@ -230,54 +248,54 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   label: {
-    color: '#fff',
+    color: "#fff",
     marginBottom: 4,
   },
   inputWrapper: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#9ca3af',
+    borderColor: "#9ca3af",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
   },
   input: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
     flex: 1,
   },
   errorText: {
-    color: '#ef4444',
+    color: "#ef4444",
     marginTop: 4,
   },
   passwordInputWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: '#9ca3af',
+    borderColor: "#9ca3af",
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   passwordInputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   submitButton: {
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
     padding: 12,
     borderRadius: 12,
     marginTop: 8,
   },
   submitButtonText: {
     fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

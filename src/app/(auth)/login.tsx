@@ -18,7 +18,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 const LoginScreen = () => {
@@ -87,7 +86,7 @@ const LoginScreen = () => {
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
       >
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
           <Text style={styles.heading}>Welcome Back!</Text>
           <View style={styles.formContainer}>
             <View>
@@ -166,7 +165,7 @@ const LoginScreen = () => {
           <Link href={"/(auth)/signup"} style={styles.link}>
             Create an account?
           </Link>
-        </SafeAreaView>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
