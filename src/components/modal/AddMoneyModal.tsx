@@ -1,21 +1,22 @@
-import {
-  View,
-  Text,
-  Modal,
-  TextInput,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
-import React, { useState } from "react";
+import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import useAuthStore from "@/src/store/authStore";
-import { useEnterBalance } from "@/src/utils/query/addedMoneyQuery";
-import { useQueryClient } from "@tanstack/react-query";
 import { UserBalance } from "@/src/types/user.type";
 import { successToast } from "@/src/utils/helperFunction";
+import { useEnterBalance } from "@/src/utils/query/addedMoneyQuery";
 import Feather from "@expo/vector-icons/Feather";
-import dayjs from "dayjs";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
+import { useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 interface AddMoneyModalProps {
   modalVisible: boolean;
@@ -83,10 +84,10 @@ const AddMoneyModal = ({
       onRequestClose={() => setModalVisible(false)}
       animationType="fade"
     >
-      <View className="flex-1 justify-center items-center bg-black/70">
-        <View className="bg-white rounded-lg p-4 ">
-          <View className="justify-center items-center">
-            <Text className="font-medium text-lg text-center">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.contentContainer}>
+            <Text style={styles.title}>
               How much money you want to add?
             </Text>
             <TextInput
@@ -94,15 +95,15 @@ const AddMoneyModal = ({
               value={money}
               onChangeText={(value) => setMoney(value)}
               placeholder="0"
-              className="mt-2 text-4xl"
+              style={styles.input}
             />
 
             <Pressable
-              onPress={() => setShowDatePicker(true)} // Show the date picker when pressed
-              className="mt-4 bg-gray-200 px-4 py-2 rounded-lg flex-row items-center gap-3"
+              onPress={() => setShowDatePicker(true)}
+              style={styles.dateButton}
             >
               <Feather name="calendar" size={24} />
-              <Text className="text-black font-medium text-lg">
+              <Text style={styles.dateText}>
                 {dayjs(selectedDate).format("DD MMMM YYYY")}
               </Text>
             </Pressable>
@@ -117,22 +118,22 @@ const AddMoneyModal = ({
             )}
           </View>
 
-          <View className="flex-row gap-3 mt-4">
+          <View style={styles.buttonContainer}>
             <Pressable
               onPress={() => setModalVisible(false)}
-              className="border px-4 py-2 rounded-xl w-[48.5%]"
+              style={styles.cancelButton}
             >
-              <Text className="font-medium text-lg text-center">Cancel</Text>
+              <Text style={styles.buttonText}>Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleSave}
               disabled={isPending}
-              className="bg-black px-4 py-2 rounded-xl w-[48.5%]"
+              style={styles.saveButton}
             >
               {isPending ? (
                 <ActivityIndicator color={"#000"} />
               ) : (
-                <Text className="text-white font-medium text-lg text-center">
+                <Text style={styles.saveButtonText}>
                   Save
                 </Text>
               )}
@@ -145,3 +146,75 @@ const AddMoneyModal = ({
 };
 
 export default AddMoneyModal;
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+  },
+  contentContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontWeight: '500',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  input: {
+    marginTop: 8,
+    fontSize: 36,
+  },
+  dateButton: {
+    marginTop: 16,
+    backgroundColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dateText: {
+    color: '#000',
+    fontWeight: '500',
+    fontSize: 18,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  cancelButton: {
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    width: '48.5%',
+  },
+  saveButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    width: '48.5%',
+  },
+  buttonText: {
+    fontWeight: '500',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontWeight: '500',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+});

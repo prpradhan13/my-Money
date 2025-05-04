@@ -1,14 +1,14 @@
-import { View, Text } from "react-native";
-import React, { useState } from "react";
-import Animated from "react-native-reanimated";
 import {
   _entering,
   _layout,
   AnimatedPressable,
 } from "@/src/constants/Animation";
 import { categoryData } from "@/src/constants/Colors";
-import { formatCurrency } from "@/src/utils/helperFunction";
 import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
+import { formatCurrency } from "@/src/utils/helperFunction";
+import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 interface CategoryItemsProps {
   month: string;
@@ -42,16 +42,15 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const IconComponent = cData[0].iconComponent;
 
   return (
-    <Animated.View layout={_layout} className="mb-5 rounded-xl overflow-hidden">
+    <Animated.View layout={_layout} style={styles.container}>
       <AnimatedPressable
         layout={_layout}
-        className="flex-row justify-between items-center"
+        style={styles.header}
         onPress={() => toggleCategory(category)}
       >
-        <View className="flex-row gap-4 items-center">
+        <View style={styles.categoryInfo}>
           <View
-            className="p-4 rounded-full"
-            style={{ backgroundColor: cData[0].color }}
+            style={[styles.iconContainer, { backgroundColor: cData[0].color }]}
           >
             {IconComponent && (
               <IconComponent
@@ -62,33 +61,33 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
             )}
           </View>
           <View>
-            <Text className="text-white text-2xl font-medium capitalize">
+            <Text style={styles.categoryName}>
               {category}
             </Text>
-            <Text className="text-[#c2c2c2] font-medium capitalize">
+            <Text style={styles.percentage}>
               {Math.round(percentUsed)}%
             </Text>
           </View>
         </View>
 
-        <Text className="text-white text-2xl font-medium">{formatCurrency(categoryTotal)}</Text>
+        <Text style={styles.total}>{formatCurrency(categoryTotal)}</Text>
       </AnimatedPressable>
 
       {isOpen && (
         <Animated.View
           entering={_entering}
           layout={_layout}
-          className="pl-6 mt-2 gap-1"
+          style={styles.itemsContainer}
         >
           {items.map((item, idx) => (
             <View
               key={`${item.item_name}-${idx}`}
-              className="flex-row justify-between"
+              style={styles.item}
             >
-              <Text className="text-white capitalize font-medium text-lg">
+              <Text style={styles.itemName}>
                 {item.item_name}
               </Text>
-              <Text className="text-white font-medium text-lg">
+              <Text style={styles.itemPrice}>
                 {formatCurrency(item.price)}
               </Text>
             </View>
@@ -100,3 +99,61 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
 };
 
 export default CategoryItems;
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryInfo: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    padding: 16,
+    borderRadius: 999,
+  },
+  categoryName: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  percentage: {
+    color: '#c2c2c2',
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  total: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '500',
+  },
+  itemsContainer: {
+    paddingLeft: 24,
+    marginTop: 8,
+    gap: 4,
+  },
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  itemName: {
+    color: '#fff',
+    textTransform: 'capitalize',
+    fontWeight: '500',
+    fontSize: 18,
+  },
+  itemPrice: {
+    color: '#fff',
+    fontWeight: '500',
+    fontSize: 18,
+  },
+});

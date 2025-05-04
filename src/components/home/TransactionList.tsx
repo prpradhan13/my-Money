@@ -1,9 +1,9 @@
-import { View, Text } from "react-native";
-import React from "react";
-import dayjs from "dayjs";
-import { PurchaseDetailsType } from "@/src/types/purchase.type";
 import { categoryData } from "@/src/constants/Colors";
+import { PurchaseDetailsType } from "@/src/types/purchase.type";
 import { formatCurrency } from "@/src/utils/helperFunction";
+import dayjs from "dayjs";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 interface TransactionListProps {
   transaction: PurchaseDetailsType;
@@ -20,9 +20,9 @@ const TransactionList = ({ transaction }: TransactionListProps) => {
   const IconComponent = cData.iconComponent;
 
   return (
-    <View className="flex-row justify-between items-center mb-4">
-      <View className="flex-row items-center gap-5">
-        <View className="rounded-full">
+    <View style={styles.container}>
+      <View style={styles.leftContainer}>
+        <View style={styles.iconContainer}>
           {IconComponent && (
             <IconComponent
               {...cData.iconProps}
@@ -32,15 +32,17 @@ const TransactionList = ({ transaction }: TransactionListProps) => {
           )}
         </View>
 
-        <View className="w-[69%]">
-          <Text className="text-white text-xl font-medium capitalize">
+        <View style={styles.textContainer}>
+          <Text style={styles.itemName}>
             {transaction.item_name}
           </Text>
-          <Text className="text-[#c2c2c2]">{transactionDate}</Text>
+          <Text style={styles.date}>
+            {transactionDate}
+          </Text>
         </View>
       </View>
 
-      <Text className="text-white text-lg font-medium">
+      <Text style={styles.amount}>
         -{formatCurrency(transaction.total)}
       </Text>
     </View>
@@ -48,3 +50,37 @@ const TransactionList = ({ transaction }: TransactionListProps) => {
 };
 
 export default TransactionList;
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  iconContainer: {
+    borderRadius: 999,
+  },
+  textContainer: {
+    width: '69%',
+  },
+  itemName: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  date: {
+    color: '#c2c2c2',
+  },
+  amount: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+});

@@ -1,8 +1,8 @@
+import AddMoneyModal from "@/src/components/modal/AddMoneyModal";
 import { AnimatedCircle } from "@/src/constants/Animation";
 import React, { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
-import AddMoneyModal from "@/src/components/modal/AddMoneyModal";
 
 export const DonutChart = ({
   radius = 60,
@@ -54,7 +54,7 @@ export const DonutChart = ({
       </Pressable>
 
       {addMoneyModalVisible && (
-        <View className="absolute top-0 left-0 right-0">
+        <View style={styles.modalContainer}>
           <AddMoneyModal
             modalVisible={addMoneyModalVisible}
             setModalVisible={setAddMoneyModalVisible}
@@ -64,3 +64,12 @@ export const DonutChart = ({
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+});

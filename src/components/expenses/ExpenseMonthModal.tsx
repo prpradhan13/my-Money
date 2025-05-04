@@ -1,7 +1,7 @@
-import { View, Text, Modal, ScrollView, Pressable } from "react-native";
-import React from "react";
 import { MonthExpenseType } from "@/src/types/purchase.type";
 import dayjs from "dayjs";
+import React from "react";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 interface ExpenseMonthModalProps {
   showMonthPicker: boolean;
@@ -19,9 +19,9 @@ const ExpenseMonthModal = ({
     
   return (
     <Modal visible={showMonthPicker} transparent animationType="slide" onRequestClose={() => setShowMonthPicker(false)}>
-      <View className="flex-1 justify-center items-center bg-black/70">
-        <View className="bg-white rounded-lg p-4 w-3/4 max-h-[60%]">
-          <Text className="text-xl font-semibold mb-4 text-center">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>
             Select Month
           </Text>
           <ScrollView>
@@ -32,17 +32,17 @@ const ExpenseMonthModal = ({
                   setSelectedMonth(month);
                   setShowMonthPicker(false);
                 }}
-                className="py-2 border-b border-gray-300"
+                style={styles.monthItem}
               >
-                <Text className="text-center text-lg text-black">
+                <Text style={styles.monthText}>
                   {dayjs(month).format("MMMM YYYY")}
                 </Text>
               </Pressable>
             ))}
           </ScrollView>
 
-          <Pressable onPress={() => setShowMonthPicker(false)} className="mt-4">
-            <Text className="text-center text-red-500 font-semibold">
+          <Pressable onPress={() => setShowMonthPicker(false)} style={styles.cancelButton}>
+            <Text style={styles.cancelText}>
               Cancel
             </Text>
           </Pressable>
@@ -53,3 +53,43 @@ const ExpenseMonthModal = ({
 };
 
 export default ExpenseMonthModal;
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    width: '75%',
+    maxHeight: '60%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  monthItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#d1d5db',
+  },
+  monthText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#000',
+  },
+  cancelButton: {
+    marginTop: 16,
+  },
+  cancelText: {
+    textAlign: 'center',
+    color: '#ef4444',
+    fontWeight: '600',
+  },
+});

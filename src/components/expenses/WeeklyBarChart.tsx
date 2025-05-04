@@ -1,10 +1,10 @@
-import { View, Text, Pressable } from "react-native";
-import React, { useMemo, useState } from "react";
-import { BarChart } from "react-native-gifted-charts";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
 import Feather from "@expo/vector-icons/Feather";
+import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import isoWeek from "dayjs/plugin/isoWeek";
+import React, { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -106,8 +106,8 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
   }, [viewMode, currentMonthData, currentWeekStart, currentWeekEnd, rangeEnd]);
 
   return (
-    <View className="bg-[#2a2a2a] p-2 rounded-xl py-4">
-      <Text className="text-2xl font-bold mb-4 text-white">
+    <View style={styles.container}>
+      <Text style={styles.title}>
         {rangeStart.format("MMM D")} - {rangeEnd.format("D")}
       </Text>
 
@@ -129,30 +129,30 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
           setViewMode((prev) => (prev === "month" ? "week" : "month"));
           setWeekOffset(0);
         }}
-        className="absolute right-4 top-4 bg-white px-3 py-1 rounded-full"
+        style={styles.viewModeButton}
       >
-        <Text className="text-black font-semibold">
+        <Text style={styles.viewModeText}>
           {viewMode === "month" ? "View Week" : "View Month"}
         </Text>
       </Pressable>
       
       {viewMode === "week" && (
-        <View className="flex-row justify-between mt-4">
+        <View style={styles.weekControls}>
           <Pressable
             onPress={handlePrev}
-            className="bg-[#c2c2c2] p-1 rounded-full"
+            style={styles.controlButton}
           >
             <Feather name="chevron-left" size={24} />
           </Pressable>
 
-          <Text className="text-white text-lg font-semibold">
+          <Text style={styles.weekRange}>
             {currentWeekStart.format("MMM D")} -{" "}
             {currentWeekEnd.format("MMM D")}
           </Text>
 
           <Pressable
             onPress={handleNext}
-            className="bg-[#c2c2c2] p-1 rounded-full"
+            style={styles.controlButton}
           >
             <Feather name="chevron-right" size={24} />
           </Pressable>
@@ -163,3 +163,46 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
 };
 
 export default WeeklyBarChart;
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#2a2a2a',
+    padding: 8,
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+    color: '#fff',
+  },
+  viewModeButton: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  viewModeText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  weekControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  controlButton: {
+    backgroundColor: '#c2c2c2',
+    padding: 4,
+    borderRadius: 999,
+  },
+  weekRange: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});

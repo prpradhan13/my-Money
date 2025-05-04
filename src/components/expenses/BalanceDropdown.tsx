@@ -1,6 +1,6 @@
 import { _entering } from "@/src/constants/Animation";
 import React from "react";
-import { Text, Pressable } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import Animated from "react-native-reanimated";
 
 type BalanceDropdownProps = {
@@ -22,7 +22,7 @@ const BalanceDropdown = ({
   ];
 
   return (
-    <Animated.View entering={_entering} className="min-w-[160px] bg-white absolute top-full left-1/2 -translate-x-1/2 p-2 z-20 rounded-lg items-center">
+    <Animated.View entering={_entering} style={styles.container}>
       {options.map((option, index) => (
         <Pressable
           key={index}
@@ -30,9 +30,9 @@ const BalanceDropdown = ({
             setShowBalance(option.value);
             closeDropdown();
           }}
-          className="py-1"
+          style={styles.option}
         >
-          <Text className="text-black font-medium">
+          <Text style={styles.optionText}>
             {option.label}
           </Text>
         </Pressable>
@@ -42,3 +42,25 @@ const BalanceDropdown = ({
 };
 
 export default BalanceDropdown;
+
+const styles = StyleSheet.create({
+  container: {
+    minWidth: 160,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: '100%',
+    left: '50%',
+    transform: [{ translateX: -80 }],
+    padding: 8,
+    zIndex: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  option: {
+    paddingVertical: 4,
+  },
+  optionText: {
+    color: '#000',
+    fontWeight: '500',
+  },
+});
