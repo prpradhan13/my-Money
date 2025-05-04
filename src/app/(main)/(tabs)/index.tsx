@@ -1,17 +1,17 @@
-import TransactionList from '@/src/components/home/TransactionList';
-import DefaultLoader from '@/src/components/loader/DefaultLoader';
-import AddMoneyModal from '@/src/components/modal/AddMoneyModal';
-import { useAddedMoneyStore } from '@/src/store/addedMoneyStore';
-import { useTransactionStore } from '@/src/store/transactionStore';
-import { formatCurrency } from '@/src/utils/helperFunction';
-import { useGetUserAllAddedMoney } from '@/src/utils/query/addedMoneyQuery';
-import { useGetUserAllPurchases } from '@/src/utils/query/purchaseQuery';
-import { useGetUserDetails } from '@/src/utils/query/userQuery';
-import Feather from '@expo/vector-icons/Feather';
-import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import TransactionList from "@/src/components/home/TransactionList";
+import DefaultLoader from "@/src/components/loader/DefaultLoader";
+import AddMoneyModal from "@/src/components/modal/AddMoneyModal";
+import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
+import { useTransactionStore } from "@/src/store/transactionStore";
+import { formatCurrency } from "@/src/utils/helperFunction";
+import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
+import { useGetUserAllPurchases } from "@/src/utils/query/purchaseQuery";
+import { useGetUserDetails } from "@/src/utils/query/userQuery";
+import Feather from "@expo/vector-icons/Feather";
+import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const [addMoneyModalVisible, setAddMoneyModalVisible] = useState(false);
@@ -48,11 +48,12 @@ export default function HomeScreen() {
     );
   }
 
-  const userRestBalance = (userTotalBalance || 0) - (userAllTransactionAmount || 0);
+  const userRestBalance =
+    (userTotalBalance || 0) - (userAllTransactionAmount || 0);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.headerContainer}>
           <View>
             <Text style={styles.greetingText}>Hii,</Text>
@@ -68,6 +69,21 @@ export default function HomeScreen() {
             <Text style={styles.balanceAmount}>
               {formatCurrency(userRestBalance ?? 0)}
             </Text>
+            <Link href={"/upcomingBills"} asChild>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 14,
+                  fontWeight: "500",
+                  backgroundColor: "#000",
+                  padding: 8,
+                  borderRadius: 8,
+                  marginTop: 8,
+                }}
+              >
+                Upcoming Bills
+              </Text>
+            </Link>
           </View>
 
           <Pressable
@@ -96,7 +112,10 @@ export default function HomeScreen() {
                 .slice(0, 10)
                 .map((transaction) => (
                   <TransactionList
-                    key={transaction.id || transaction.item_name + transaction.created_at}
+                    key={
+                      transaction.id ||
+                      transaction.item_name + transaction.created_at
+                    }
                     transaction={transaction}
                   />
                 ))
@@ -125,75 +144,75 @@ const styles = StyleSheet.create({
   },
   noUserContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   noUserText: {
-    color: '#fff',
+    color: "#fff",
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   greetingText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
   },
   userNameText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   balanceContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    height: 128,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    height: 135,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginVertical: 16,
   },
   balanceLabel: {
-    fontWeight: '500',
+    fontWeight: "500",
     fontSize: 18,
   },
   balanceAmount: {
     fontSize: 36,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   addButton: {
     borderRadius: 999,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     padding: 12,
   },
   transactionsContainer: {
     flex: 1,
   },
   transactionsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   transactionsTitle: {
-    color: '#e8e8e8',
+    color: "#e8e8e8",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   seeAllText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   transactionsList: {
     marginTop: 16,
   },
   noTransactionsText: {
-    color: '#fff',
-    textAlign: 'center',
+    color: "#fff",
+    textAlign: "center",
   },
   modalContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,

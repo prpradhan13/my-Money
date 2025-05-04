@@ -21,6 +21,10 @@ const MainLayout = () => {
           options={{ title: "All Tansactions" }}
         />
         <Stack.Screen
+          name="upcomingBills"
+          options={{ title: "Upcoming Bills" }}
+        />
+        <Stack.Screen
           name="createExpenseModal"
           options={{
             headerShown: false,
