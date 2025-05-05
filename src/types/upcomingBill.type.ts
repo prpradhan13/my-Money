@@ -7,5 +7,20 @@ export type UpcomingBillType = {
     bill_templates: {
         id: string;
         category: string;
+        is_recurring: boolean;
     };
+}
+
+export type AllCreatedBillsType = {
+    id: string;
+    user_id: string;
+    title: string;
+    category: string;
+    amount: number;
+    day_of_month: number;
+    is_recurring: boolean;
+    remind_before_days: number;
+    note: string;
+    created_at: string;
+    updated_at: string;
 }

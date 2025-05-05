@@ -21,8 +21,8 @@ const MainLayout = () => {
           options={{ title: "All Tansactions" }}
         />
         <Stack.Screen
-          name="upcomingBills"
-          options={{ title: "Upcoming Bills" }}
+          name="allCreatedBills"
+          options={{ title: "All Created Bills" }}
         />
         <Stack.Screen
           name="createExpenseModal"

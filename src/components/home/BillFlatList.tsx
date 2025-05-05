@@ -7,11 +7,12 @@ import { formatCurrency } from "@/src/utils/helperFunction";
 import { Link } from "expo-router";
 
 const BillFlatList = ({ bills }: { bills: UpcomingBillType[] }) => {
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignContent: "center" }}>
         <Text style={styles.title}>Upcoming Bills</Text>
-        <Link href={"/upcomingBills"} asChild>
+        <Link href={"/bills"} asChild>
           <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
             View All
           </Text>

@@ -17,3 +17,15 @@ export const enterBalanceSchema = z.object({
 })
 
 export type TEnterBalanceSchema = z.infer<typeof enterBalanceSchema>
+
+export const createUpcomingBillSchema = z.object({
+    title: z.string().min(1, "Name is required").trim(),
+    category: z.string().min(1, "Choose one").trim(),
+    amount: z.number().min(1, "Amount is required"),
+    day_of_month: z.number().min(1, "Due date is required"),
+    is_recurring: z.boolean().optional(),
+    remind_before_days: z.number().optional(),
+    note: z.string().trim().optional(),
+})
+
+export type TCreateUpcomingBillSchema = z.infer<typeof createUpcomingBillSchema>

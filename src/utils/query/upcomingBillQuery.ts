@@ -1,10 +1,11 @@
 import useAuthStore from "@/src/store/authStore";
-import { UpcomingBillType } from "@/src/types/upcomingBill.type";
+import { PurchaseDetailsType } from "@/src/types/purchase.type";
+import { AllCreatedBillsType, UpcomingBillType } from "@/src/types/upcomingBill.type";
+import { TCreateUpcomingBillSchema } from "@/src/validations/form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { errorToast, successToast } from "../helperFunction";
 import { supabase } from "../lib/supabase";
-import { PurchaseDetailsType } from "@/src/types/purchase.type";
-import { router } from "expo-router";
 
 export const useGetUpcomingBills = () => {
   const { user } = useAuthStore();
@@ -19,7 +20,7 @@ export const useGetUpcomingBills = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bill_instances")
-        .select("id, title, amount, due_date, status, bill_templates(id, category)")
+        .select("id, title, amount, due_date, status, bill_templates(id, category, is_recurring)")
         .eq("user_id", userId)
         .neq("status", "paid")
         .gte("due_date", today.toISOString().split("T")[0])
@@ -32,36 +33,6 @@ export const useGetUpcomingBills = () => {
       }
 
       return data as unknown as UpcomingBillType[];
-    },
-  });
-};
-
-export const useStopRecurringBill = () => {
-  const { user } = useAuthStore();
-  const userId = user?.id;
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (templateId: string) => {
-      const { data, error } = await supabase
-        .from("bill_templates")
-        .update({ is_recurring: false })
-        .eq("user_id", userId)
-        .eq("template_id", templateId);
-
-      if (error) {
-        errorToast(error.message);
-        throw new Error(error.message);
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
-      successToast("Bill stopped");
-    },
-    onError: () => {
-      errorToast("Failed to stop bill");
     },
   });
 };
@@ -124,6 +95,116 @@ export const useMarkBillAsPaid = () => {
     onError: (error) => {
       errorToast("Failed to mark bill as paid");
       console.log("error", error);
+    },
+  });
+};
+
+export const useStopBill = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (billId: string) => {
+      const { data, error } = await supabase
+      .from('bill_templates')
+      .update({ is_recurring: false })
+      .eq('user_id', userId)
+      .eq('id', billId);
+
+      if (error) {
+        errorToast(error.message);
+        throw new Error(error.message);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
+      successToast("Bill stopped");
+    },
+    onError: () => {
+      errorToast("Failed to stop bill");
+    },
+  });
+};
+
+export const useGetAllCreatedBills = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  return useQuery<AllCreatedBillsType[]>({
+    queryKey: ["allCreatedBills", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bill_templates")
+        .select("*")
+        .eq("user_id", userId);
+
+      if (error) {
+        errorToast(error.message);
+        throw new Error(error.message);
+      }
+      
+      return data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const useCreateUpcomingBill = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  return useMutation({
+    mutationFn: async (billData: TCreateUpcomingBillSchema) => {
+      const { data, error } = await supabase
+        .from("bill_templates")
+        .insert({
+          user_id: userId,
+          ...billData,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        errorToast(error.message);
+        throw new Error(error.message);
+      }
+
+      return data as UpcomingBillType;
+    },
+    onError: (error) => {
+      errorToast("Failed to create bill");
+      console.log("error", error);
+    },
+  });
+};
+
+export const useDeleteBill = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (billId: string) => {
+      const { error } = await supabase
+        .from("bill_templates")
+        .delete()
+        .eq("id", billId)
+        .eq("user_id", userId);
+
+      if (error) {
+        errorToast(error.message);
+        throw new Error(error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allCreatedBills", userId] });
+      successToast("Bill deleted successfully");
+    },
+    onError: () => {
+      errorToast("Failed to delete bill");
     },
   });
 };

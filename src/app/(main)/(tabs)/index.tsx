@@ -120,7 +120,9 @@ export default function HomeScreen() {
               </Pressable>
             </View>
 
-            {billData && <BillFlatList bills={billData} />}
+            {billData && billData.length > 0 && (
+              <BillFlatList bills={billData} />
+            )}
 
             <View style={styles.transactionsHeader}>
               <Text style={styles.transactionsTitle}>Transactions</Text>

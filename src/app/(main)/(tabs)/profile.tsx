@@ -1,10 +1,12 @@
+import CreateUpcomingBill from "@/src/components/modal/CreateUpcomingBill";
 import useAuthStore from "@/src/store/authStore";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ProfileScreen = () => {
+  const [isCreateUpcomingBillVisible, setIsCreateUpcomingBillVisible] = useState(false);
   const { logout } = useAuthStore()
 
   const handleLogOut = async () => {
@@ -25,6 +27,12 @@ const ProfileScreen = () => {
       <Pressable onPress={() => router.push('/createExpenseModal')} style={styles.button}>
         <Text style={styles.buttonText}>Add Expense</Text>
       </Pressable>
+
+      <Pressable onPress={() => setIsCreateUpcomingBillVisible(true)} style={styles.button}>
+        <Text style={styles.buttonText}>Set Upcoming Bill</Text>
+      </Pressable>
+
+      <CreateUpcomingBill isVisible={isCreateUpcomingBillVisible} setIsVisible={setIsCreateUpcomingBillVisible} />
     </SafeAreaView>
   );
 };
