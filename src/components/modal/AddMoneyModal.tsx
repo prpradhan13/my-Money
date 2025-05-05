@@ -10,7 +10,9 @@ import dayjs from "dayjs";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -84,25 +86,32 @@ const AddMoneyModal = ({
       onRequestClose={() => setModalVisible(false)}
       animationType="fade"
     >
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.modalOverlay}
+      >
         <View style={styles.modalContent}>
           <View style={styles.contentContainer}>
-            <Text style={styles.title}>
-              How much money you want to add?
-            </Text>
-            <TextInput
-              keyboardType="numeric"
-              value={money}
-              onChangeText={(value) => setMoney(value)}
-              placeholder="0"
-              style={styles.input}
-            />
+            <Text style={styles.title}>Add Money</Text>
+            <Text style={styles.subtitle}>Enter the amount you want to add</Text>
+            
+            <View style={styles.inputContainer}>
+              <Text style={styles.currencySymbol}>₹</Text>
+              <TextInput
+                keyboardType="numeric"
+                value={money}
+                onChangeText={(value) => setMoney(value)}
+                placeholder="0"
+                placeholderTextColor="#9CA3AF"
+                style={styles.input}
+              />
+            </View>
 
             <Pressable
               onPress={() => setShowDatePicker(true)}
               style={styles.dateButton}
             >
-              <Feather name="calendar" size={24} />
+              <Feather name="calendar" size={20} color="#4B5563" />
               <Text style={styles.dateText}>
                 {dayjs(selectedDate).format("DD MMMM YYYY")}
               </Text>
@@ -123,24 +132,22 @@ const AddMoneyModal = ({
               onPress={() => setModalVisible(false)}
               style={styles.cancelButton}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleSave}
               disabled={isPending}
-              style={styles.saveButton}
+              style={[styles.saveButton, isPending && styles.saveButtonDisabled]}
             >
               {isPending ? (
-                <ActivityIndicator color={"#000"} />
+                <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.saveButtonText}>
-                  Save
-                </Text>
+                <Text style={styles.saveButtonText}>Add Money</Text>
               )}
             </Pressable>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -152,69 +159,104 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   contentContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    fontWeight: '500',
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 24,
     textAlign: 'center',
   },
-  input: {
-    marginTop: 8,
-    fontSize: 36,
-  },
-  dateButton: {
-    marginTop: 16,
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
+    paddingBottom: 8,
+    marginBottom: 24,
+  },
+  currencySymbol: {
+    fontSize: 36,
+    fontWeight: '600',
+    color: '#111827',
+    marginRight: 8,
+  },
+  input: {
+    fontSize: 36,
+    fontWeight: '600',
+    color: '#111827',
+    flex: 1,
+    padding: 0,
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 24,
   },
   dateText: {
-    color: '#000',
+    color: '#374151',
     fontWeight: '500',
-    fontSize: 18,
+    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
   },
   cancelButton: {
+    flex: 1,
     borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderColor: '#E5E7EB',
+    paddingVertical: 12,
     borderRadius: 12,
-    width: '48.5%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#374151',
+    fontWeight: '600',
+    fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#000',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    flex: 1,
+    backgroundColor: '#111827',
+    paddingVertical: 12,
     borderRadius: 12,
-    width: '48.5%',
+    alignItems: 'center',
   },
-  buttonText: {
-    fontWeight: '500',
-    fontSize: 18,
-    textAlign: 'center',
+  saveButtonDisabled: {
+    backgroundColor: '#9CA3AF',
   },
   saveButtonText: {
-    color: '#fff',
-    fontWeight: '500',
-    fontSize: 18,
-    textAlign: 'center',
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });

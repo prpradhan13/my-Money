@@ -172,6 +172,13 @@ export const useCreateUpcomingBill = () => {
         throw new Error(error.message);
       }
 
+      const { error: generateError } = await supabase.functions.invoke("generate-monthly-bills");
+
+      if (generateError) {
+        errorToast(generateError.message);
+        throw new Error(generateError.message);
+      }
+
       return data as UpcomingBillType;
     },
     onError: (error) => {

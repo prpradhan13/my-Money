@@ -21,15 +21,20 @@ const BalanceDropdown = ({
     { label: "Remaining", value: remainingBalance },
   ];
 
+  const handleOptionPress = (value: number) => {
+    setShowBalance(value);
+    // Add a small delay before closing the dropdown
+    setTimeout(() => {
+      closeDropdown();
+    }, 200);
+  };
+
   return (
     <Animated.View entering={_entering} style={styles.container}>
       {options.map((option, index) => (
         <Pressable
           key={index}
-          onPress={() => {
-            setShowBalance(option.value);
-            closeDropdown();
-          }}
+          onPress={() => handleOptionPress(option.value)}
           style={styles.option}
         >
           <Text style={styles.optionText}>
@@ -46,21 +51,32 @@ export default BalanceDropdown;
 const styles = StyleSheet.create({
   container: {
     minWidth: 160,
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     position: 'absolute',
     top: '100%',
     left: '50%',
     transform: [{ translateX: -80 }],
     padding: 8,
-    zIndex: 20,
+    zIndex: 50,
     borderRadius: 8,
     alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   option: {
-    paddingVertical: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    width: '100%',
+    alignItems: 'center',
   },
   optionText: {
-    color: '#000',
+    color: '#fff',
     fontWeight: '500',
   },
 });

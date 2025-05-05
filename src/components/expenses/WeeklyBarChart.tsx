@@ -170,6 +170,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 12,
     paddingVertical: 16,
+    marginBottom: 16,
+    overflow: "hidden",
   },
   title: {
     fontSize: 24,

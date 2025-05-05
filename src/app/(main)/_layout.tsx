@@ -18,7 +18,11 @@ const MainLayout = () => {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="allTransactions"
-          options={{ title: "All Tansactions" }}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="allBalanceAdded"
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="allCreatedBills"

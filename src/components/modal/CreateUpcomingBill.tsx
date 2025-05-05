@@ -234,7 +234,6 @@ const CreateUpcomingBill = ({
                           {
                             ...selectedCategoryData.iconProps,
                             name: selectedCategoryData.iconProps.name as any,
-                            color: "#fff",
                           }
                         )}
                       <Text style={styles.categoryText}>
@@ -266,6 +265,7 @@ const CreateUpcomingBill = ({
                               <IconComponent
                                 {...cat.iconProps}
                                 name={cat.iconProps?.name as any}
+                                color="black"
                               />
                             )}
                             <Text style={styles.categoryOptionText}>

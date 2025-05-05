@@ -1,6 +1,5 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { useColorScheme } from "@/src/hooks/useColorScheme";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -13,9 +12,6 @@ export default function TabLayout() {
         tabBarItemStyle: {
           justifyContent: "center",
           alignItems: "center",
-        },
-        tabBarIconStyle: {
-          marginTop: 5,
         },
       }}
     >

@@ -11,7 +11,7 @@ import { useGetUpcomingBills } from "@/src/utils/query/upcomingBillQuery";
 import { useGetUserDetails } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -48,16 +48,29 @@ export default function HomeScreen() {
   const { userTotalBalance, setUserBalance } = useAddedMoneyStore();
 
   useEffect(() => {
-    if (purchasesData) {
+    refetchBillData();
+    refetchPurchasesData();
+  }, [refetchBillData, refetchPurchasesData]);
+
+  useEffect(() => {
+    if (purchasesData && purchasesData !== allExpenses) {
       setAllExpenses(purchasesData);
     }
-  }, [purchasesData, setAllExpenses]);
+  }, [allExpenses, purchasesData, setAllExpenses]);
 
   useEffect(() => {
     if (addedMoneyData) {
-      setUserBalance(addedMoneyData);
+      const total = addedMoneyData.reduce((sum, item) => sum + item.balance, 0);
+      if (total !== userTotalBalance) {
+        setUserBalance(addedMoneyData);
+      }
     }
-  }, [addedMoneyData, setUserBalance]);
+  }, [addedMoneyData, setUserBalance, userTotalBalance]);
+
+  const topExpenses = useMemo(
+    () => allExpenses?.slice(0, 10) ?? [],
+    [allExpenses]
+  );
 
   if (
     userDataLoading ||
@@ -88,54 +101,82 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const Header = React.memo(({ userData }: { userData: any }) => (
+    <View style={styles.headerContainer}>
+      <View>
+        <Text style={styles.greetingText}>Hii,</Text>
+        <Text style={styles.userNameText}>{userData.full_name}</Text>
+      </View>
+      <Feather name="bell" size={24} color={"#fff"} />
+    </View>
+  ));
+  Header.displayName = "Header";
+
+  const BalanceSection = React.memo(
+    ({
+      userRestBalance,
+      onAddMoneyPress,
+    }: {
+      userRestBalance: number;
+      onAddMoneyPress: () => void;
+    }) => (
+      <View style={styles.balanceContainer}>
+        <View>
+          <Text style={styles.balanceLabel}>Total Savings</Text>
+          <Text style={styles.balanceAmount}>
+            {formatCurrency(userRestBalance ?? 0)}
+          </Text>
+
+          <Link href={"/allBalanceAdded"} asChild>
+            <Text style={styles.balanceLabel}>Balance Details</Text>
+          </Link>
+        </View>
+        <Pressable onPress={onAddMoneyPress} style={styles.addButton}>
+          <Feather name="plus" color={"#fff"} size={26} />
+        </Pressable>
+      </View>
+    )
+  );
+  BalanceSection.displayName = "BalanceSection";
+
+  const TransactionsHeader = React.memo(() => (
+    <View style={styles.transactionsHeader}>
+      <Text style={styles.transactionsTitle}>Transactions</Text>
+      <Link href={"/allTransactions"} asChild>
+        <Text style={styles.seeAllText}>See all</Text>
+      </Link>
+    </View>
+  ));
+  TransactionsHeader.displayName = "TransactionsHeader";
+
+  const MemoizedTransaction = React.memo(({ item }: { item: any }) => (
+    <TransactionList transaction={item} />
+  ));
+  MemoizedTransaction.displayName = "MemoizedTransaction";
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={allExpenses?.slice(0, 10)}
+        data={topExpenses}
         keyExtractor={(item) => item.id || item.item_name + item.created_at}
-        renderItem={({ item }) => <TransactionList transaction={item} />}
+        renderItem={({ item }) => <MemoizedTransaction item={item} />}
         ListHeaderComponent={
           <>
-            <View style={styles.headerContainer}>
-              <View>
-                <Text style={styles.greetingText}>Hii,</Text>
-                <Text style={styles.userNameText}>{userData.full_name}</Text>
-              </View>
-              <Feather name="bell" size={24} color={"#fff"} />
-            </View>
-
-            <View style={styles.balanceContainer}>
-              <View>
-                <Text style={styles.balanceLabel}>Total Savings</Text>
-                <Text style={styles.balanceAmount}>
-                  {formatCurrency(userRestBalance ?? 0)}
-                </Text>
-              </View>
-
-              <Pressable
-                onPress={() => setAddMoneyModalVisible(true)}
-                style={styles.addButton}
-              >
-                <Feather name="plus" color={"#fff"} size={26} />
-              </Pressable>
-            </View>
-
+            <Header userData={userData} />
+            <BalanceSection
+              userRestBalance={userRestBalance}
+              onAddMoneyPress={() => setAddMoneyModalVisible(true)}
+            />
             {billData && billData.length > 0 && (
               <BillFlatList bills={billData} />
             )}
-
-            <View style={styles.transactionsHeader}>
-              <Text style={styles.transactionsTitle}>Transactions</Text>
-              <Link href={"/allTransactions"} asChild>
-                <Text style={styles.seeAllText}>See all</Text>
-              </Link>
-            </View>
+            <TransactionsHeader />
           </>
         }
         ListEmptyComponent={
           <Text style={styles.noTransactionsText}>No Transactions</Text>
         }
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
@@ -167,43 +208,66 @@ const styles = StyleSheet.create({
   },
   noUserText: {
     color: "#fff",
+    fontSize: 16,
   },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 24,
   },
   greetingText: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: "300",
   },
   userNameText: {
     color: "#fff",
-    fontSize: 24,
-    fontWeight: "500",
+    fontSize: 28,
+    fontWeight: "600",
   },
   balanceContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    height: 135,
+    backgroundColor: "#1A1A1A",
+    borderRadius: 20,
+    padding: 24,
+    height: 160,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 16,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   balanceLabel: {
+    color: "#A0A0A0",
     fontWeight: "500",
-    fontSize: 18,
+    fontSize: 16,
+    marginBottom: 8,
   },
   balanceAmount: {
-    fontSize: 36,
-    fontWeight: "600",
+    fontSize: 40,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
   },
   addButton: {
-    borderRadius: 999,
-    backgroundColor: "#000",
-    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#2A2A2A",
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   transactionsContainer: {
     flex: 1,
@@ -211,28 +275,33 @@ const styles = StyleSheet.create({
   transactionsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   transactionsTitle: {
-    color: "#e8e8e8",
-    fontSize: 18,
-    fontWeight: "500",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "600",
   },
   seeAllText: {
-    color: "#fff",
-    fontSize: 18,
+    color: "#A0A0A0",
+    fontSize: 16,
     fontWeight: "500",
   },
   transactionsList: {
     marginTop: 16,
   },
   noTransactionsText: {
-    color: "#fff",
+    color: "#A0A0A0",
     textAlign: "center",
+    fontSize: 16,
+    marginTop: 24,
   },
   modalContainer: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });

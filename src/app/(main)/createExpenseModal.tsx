@@ -6,7 +6,7 @@ import {
 import { categoryData } from "@/src/constants/Colors";
 import useAuthStore from "@/src/store/authStore";
 import { PurchaseDetailsType } from "@/src/types/purchase.type";
-import { successToast } from "@/src/utils/helperFunction";
+import { formatCurrency, successToast } from "@/src/utils/helperFunction";
 import { useCreatePurchase } from "@/src/utils/query/purchaseQuery";
 import {
   createPurchaseSchema,
@@ -178,6 +178,7 @@ const CreateExpenseModal = () => {
                         <IconComponent
                           {...cat.iconProps}
                           name={cat.iconProps?.name as any}
+                          color="black"
                         />
                       )}
                       <Text style={styles.categoryOptionText}>
@@ -307,7 +308,7 @@ const CreateExpenseModal = () => {
 
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalAmount}>{total}</Text>
+          <Text style={styles.totalAmount}>{formatCurrency(total ?? 0)}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

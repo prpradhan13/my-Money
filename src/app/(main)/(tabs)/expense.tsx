@@ -1,10 +1,8 @@
-import BalanceDropdown from "@/src/components/expenses/BalanceDropdown";
 import CategoryItems from "@/src/components/expenses/CategoryItems";
 import { DonutChart } from "@/src/components/expenses/DonutChart";
 import ExpenseMonthModal from "@/src/components/expenses/ExpenseMonthModal";
 import WeeklyBarChart from "@/src/components/expenses/WeeklyBarChart";
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
-import { _layout, AnimatedPressable } from "@/src/constants/Animation";
 import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import useAuthStore from "@/src/store/authStore";
 import { useTransactionStore } from "@/src/store/transactionStore";
@@ -19,13 +17,12 @@ import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ExpenseScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [openBalanceCategoryBox, setOpenBalanceCategoryBox] = useState(false);
+  const [balanceView, setBalanceView] = useState<"monthly" | "remaining">("monthly");
 
   const { user } = useAuthStore();
   const { monthlyBalance } = useAddedMoneyStore();
@@ -100,55 +97,104 @@ const ExpenseScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.headerContainer}>
-          <Pressable onPress={() => setShowMonthPicker(true)}>
-            <Text style={styles.yearText}>
-              {dayjs(selectedMonth).format("YYYY")}
-            </Text>
-            <Text style={styles.monthText}>
-              {dayjs(selectedMonth).format("MMMM")}
-            </Text>
-          </Pressable>
-
-          <View style={styles.balanceContainer}>
-            <Animated.View layout={_layout}>
-              <AnimatedPressable
-                onPress={() => setOpenBalanceCategoryBox((prev) => !prev)}
-                style={styles.balanceButton}
+          <View style={styles.headerTop}>
+            <View style={styles.monthSelector}>
+              <Pressable
+                onPress={() => setShowMonthPicker(true)}
+                style={styles.monthButton}
               >
-                <Text style={styles.balanceAmount}>
-                  {formatCurrency(showBalance)}
+                <Text style={styles.yearText}>
+                  {dayjs(selectedMonth).format("YYYY")}
                 </Text>
-                <View style={styles.balanceLabelContainer}>
-                  <Text style={styles.balanceLabel}>This month</Text>
-                  <Feather name="chevron-down" color={"#c2c2c2"} size={14} />
-                </View>
-              </AnimatedPressable>
-            </Animated.View>
+                <Text style={styles.monthText}>
+                  {dayjs(selectedMonth).format("MMMM")}
+                </Text>
+                <Feather name="chevron-down" size={20} color="#A0A0A0" />
+              </Pressable>
+            </View>
 
-            {openBalanceCategoryBox && (
-              <BalanceDropdown
-                monthlyBalance={balanceForMonth}
-                remainingBalance={remainingBalance}
-                setShowBalance={setShowBalance}
-                closeDropdown={() => setOpenBalanceCategoryBox(false)}
-              />
-            )}
+            <View style={styles.balanceContainer}>
+              <View style={styles.balanceToggle}>
+                <Pressable
+                  onPress={() => {
+                    setBalanceView("monthly");
+                    setShowBalance(balanceForMonth);
+                  }}
+                  style={[
+                    styles.toggleButton,
+                    balanceView === "monthly" && styles.toggleButtonActive,
+                  ]}
+                >
+                  <Text style={[
+                    styles.toggleText,
+                    balanceView === "monthly" && styles.toggleTextActive
+                  ]}>
+                    Monthly
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setBalanceView("remaining");
+                    setShowBalance(remainingBalance);
+                  }}
+                  style={[
+                    styles.toggleButton,
+                    balanceView === "remaining" && styles.toggleButtonActive,
+                  ]}
+                >
+                  <Text style={[
+                    styles.toggleText,
+                    balanceView === "remaining" && styles.toggleTextActive
+                  ]}>
+                    Remaining
+                  </Text>
+                </Pressable>
+              </View>
+              <Text style={styles.balanceAmount}>
+                {formatCurrency(showBalance)}
+              </Text>
+            </View>
           </View>
 
-          <DonutChart
-            total={balanceForMonth}
-            spent={totalSpend}
-            radius={23}
-            strokeWidth={8}
-          />
+          <View style={styles.headerBottom}>
+            <View style={styles.chartContainer}>
+              <DonutChart
+                total={balanceForMonth}
+                spent={totalSpend}
+                radius={28}
+                strokeWidth={10}
+              />
+              <View style={styles.chartInfo}>
+                <Text style={styles.chartLabel}>Spent</Text>
+                <Text style={styles.chartValue}>
+                  {formatCurrency(totalSpend)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Total Budget</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(balanceForMonth)}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Remaining</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(remainingBalance)}</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
         <WeeklyBarChart data={weeklyBarData} />
 
-        <View style={styles.categoriesContainer}>
+        <View>
+          <Text style={styles.sectionTitle}>Categories</Text>
           {categoryArray.map((c, index) => (
             <CategoryItems
               key={index}
@@ -160,16 +206,14 @@ const ExpenseScreen = () => {
         </View>
       </ScrollView>
 
-      <View>
-        {showMonthPicker && (
-          <ExpenseMonthModal
-            groupedExpenses={groupedExpenses}
-            setSelectedMonth={setSelectedMonth}
-            setShowMonthPicker={setShowMonthPicker}
-            showMonthPicker={showMonthPicker}
-          />
-        )}
-      </View>
+      {showMonthPicker && (
+        <ExpenseMonthModal
+          groupedExpenses={groupedExpenses}
+          setSelectedMonth={setSelectedMonth}
+          setShowMonthPicker={setShowMonthPicker}
+          showMonthPicker={showMonthPicker}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -177,10 +221,127 @@ const ExpenseScreen = () => {
 export default ExpenseScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContent: {
+    paddingHorizontal: 10,
+    paddingBottom: 0,
+  },
+  headerContainer: {
+    backgroundColor: "#1A1A1A",
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: 16,
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  headerBottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  monthSelector: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+  },
+  monthButton: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  yearText: {
+    color: "#A0A0A0",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  monthText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  balanceContainer: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  balanceToggle: {
+    flexDirection: "row",
+    backgroundColor: "#2A2A2A",
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 8,
+  },
+  toggleButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  toggleButtonActive: {
+    backgroundColor: "#3A3A3A",
+  },
+  toggleText: {
+    color: "#A0A0A0",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  toggleTextActive: {
+    color: "#fff",
+  },
+  balanceAmount: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "700",
+  },
+  chartContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chartInfo: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  chartLabel: {
+    color: "#A0A0A0",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  chartValue: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  summaryContainer: {
+    flex: 1,
+    marginLeft: 20,
+  },
+  summaryItem: {
+    marginBottom: 12,
+  },
+  summaryLabel: {
+    color: "#A0A0A0",
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  summaryValue: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 16,
+    marginTop: 16,
   },
   noTransactionsContainer: {
     flex: 1,
@@ -191,47 +352,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "500",
     fontSize: 20,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  yearText: {
-    color: "#c2c2c2",
-    fontWeight: "600",
-  },
-  monthText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 24,
-  },
-  balanceContainer: {
-    position: "relative",
-    alignItems: "center",
-  },
-  balanceButton: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  balanceAmount: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  balanceLabelContainer: {
-    flexDirection: "row",
-    gap: 4,
-    alignItems: "center",
-  },
-  balanceLabel: {
-    color: "#c2c2c2",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  categoriesContainer: {
-    marginTop: 24,
-    gap: 8,
   },
 });

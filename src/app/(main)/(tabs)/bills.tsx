@@ -40,9 +40,8 @@ const BillsScreen = () => {
       >
         <Pressable
           onPress={() => router.back()}
-          style={{ backgroundColor: "#fff", padding: 10, borderRadius: 12 }}
         >
-          <Feather name="arrow-left" size={24} color={"#000"} />
+          <Feather name="arrow-left" size={24} color={"#fff"} />
         </Pressable>
         <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
           Upcoming Bills
@@ -50,9 +49,8 @@ const BillsScreen = () => {
         <Link
           href={"/allCreatedBills"}
           asChild
-          style={{ backgroundColor: "#fff", padding: 10, borderRadius: 12 }}
         >
-          <FontAwesome5 name="money-bill-wave" size={24} color="black" />
+          <FontAwesome5 name="money-bill-wave" size={24} color="#fff" />
         </Link>
       </View>
       <FlatList

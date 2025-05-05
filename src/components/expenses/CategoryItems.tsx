@@ -1,14 +1,14 @@
 import {
-  _entering,
   _layout,
-  AnimatedPressable,
+  AnimatedPressable
 } from "@/src/constants/Animation";
 import { categoryData } from "@/src/constants/Colors";
 import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import { formatCurrency } from "@/src/utils/helperFunction";
+import Feather from "@expo/vector-icons/Feather";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 interface CategoryItemsProps {
   month: string;
@@ -42,7 +42,13 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const IconComponent = cData[0].iconComponent;
 
   return (
-    <Animated.View layout={_layout} style={styles.container}>
+    <Animated.View 
+      layout={_layout} 
+      style={[
+        styles.container,
+        { borderLeftColor: cData[0].color }
+      ]}
+    >
       <AnimatedPressable
         layout={_layout}
         style={styles.header}
@@ -60,22 +66,33 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
               />
             )}
           </View>
-          <View>
+          <View style={styles.categoryDetails}>
             <Text style={styles.categoryName}>
               {category}
             </Text>
-            <Text style={styles.percentage}>
-              {Math.round(percentUsed)}%
-            </Text>
+            <View style={styles.percentageContainer}>
+              <View style={[styles.percentageBar, { width: `${percentUsed}%` }]} />
+              <Text style={styles.percentage}>
+                {Math.round(percentUsed)}%
+              </Text>
+            </View>
           </View>
         </View>
 
-        <Text style={styles.total}>{formatCurrency(categoryTotal)}</Text>
+        <View style={styles.totalContainer}>
+          <Text style={styles.total}>{formatCurrency(categoryTotal)}</Text>
+          <Feather 
+            name={isOpen ? "chevron-up" : "chevron-down"} 
+            size={20} 
+            color="#A0A0A0" 
+          />
+        </View>
       </AnimatedPressable>
 
       {isOpen && (
         <Animated.View
-          entering={_entering}
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
           layout={_layout}
           style={styles.itemsContainer}
         >
@@ -102,58 +119,91 @@ export default CategoryItems;
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 12,
+    backgroundColor: "#1A1A1A",
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
+    borderLeftWidth: 4,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
   },
   categoryInfo: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
-    alignItems: 'center',
+    alignItems: "center",
+    flex: 1,
+  },
+  categoryDetails: {
+    flex: 1,
   },
   iconContainer: {
-    padding: 16,
-    borderRadius: 999,
+    padding: 12,
+    borderRadius: 12,
   },
   categoryName: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '500',
-    textTransform: 'capitalize',
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    textTransform: "capitalize",
+    marginBottom: 4,
+  },
+  percentageContainer: {
+    height: 4,
+    backgroundColor: "#2A2A2A",
+    borderRadius: 2,
+    overflow: "hidden",
+    position: "relative",
+  },
+  percentageBar: {
+    position: "absolute",
+    height: "100%",
+    backgroundColor: "#A0A0A0",
+    borderRadius: 2,
   },
   percentage: {
-    color: '#c2c2c2',
-    fontWeight: '500',
-    textTransform: 'capitalize',
+    position: "absolute",
+    right: 0,
+    top: -20,
+    color: "#A0A0A0",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  totalContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   total: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '500',
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
   },
   itemsContainer: {
-    paddingLeft: 24,
-    marginTop: 8,
-    gap: 4,
+    padding: 16,
+    paddingTop: 0,
+    gap: 12,
   },
   item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2A2A2A",
   },
   itemName: {
-    color: '#fff',
-    textTransform: 'capitalize',
-    fontWeight: '500',
-    fontSize: 18,
+    color: "#fff",
+    textTransform: "capitalize",
+    fontWeight: "500",
+    fontSize: 16,
   },
   itemPrice: {
-    color: '#fff',
-    fontWeight: '500',
-    fontSize: 18,
+    color: "#fff",
+    fontWeight: "500",
+    fontSize: 16,
   },
 });
