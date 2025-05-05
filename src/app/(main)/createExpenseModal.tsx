@@ -118,6 +118,7 @@ const CreateExpenseModal = () => {
         >
           <Feather name="x" size={22} />
         </Pressable>
+        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>Create Expense</Text>
         <Pressable
           disabled={isPending}
           onPress={() => {

@@ -116,14 +116,15 @@ const CreateUpcomingBill = ({
   };
 
   const onRequestClose = () => {
+    reset();
+    setSelectedCategory(null);
+    setSelectedCategoryData(null);
+    setSelectedDay(1);
     handleCloseDropdowns();
     setIsVisible(false);
-    reset();
   };
 
   const onSubmit = (data: TCreateUpcomingBillSchema) => {
-    console.log("data", data);
-
     createUpcomingBill(data, {
       onSuccess: (returnedData) => {
         queryClient.setQueryData(
