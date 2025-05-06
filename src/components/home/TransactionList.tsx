@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
     textTransform: 'capitalize',
   },

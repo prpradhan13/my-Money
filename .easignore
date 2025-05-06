@@ -6,8 +6,6 @@
 /ios
 /android
 
-google-services.json
-
 # dependencies
 node_modules/
 
