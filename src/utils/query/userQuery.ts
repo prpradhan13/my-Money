@@ -95,3 +95,30 @@ export const useUserAvatraUpdate = () => {
     },
   });
 };
+
+export const useRemovePushToken = () => {
+  const { user, logout } = useAuthStore();
+  const userId = user?.id;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ push_token: null })
+        .eq("id", userId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      await logout();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+};

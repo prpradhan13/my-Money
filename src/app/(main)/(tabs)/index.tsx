@@ -10,7 +10,7 @@ import { useGetUserAllPurchases } from "@/src/utils/query/purchaseQuery";
 import { useGetUpcomingBills } from "@/src/utils/query/upcomingBillQuery";
 import { useGetUserDetails } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -45,7 +45,7 @@ export default function HomeScreen() {
 
   const { allExpenses, userAllTransactionAmount, setAllExpenses } =
     useTransactionStore();
-  const { userTotalBalance, setUserBalance } = useAddedMoneyStore();
+  const { userTotalBalance, setUserBalance, setUserRestBalance } = useAddedMoneyStore();
 
   useEffect(() => {
     refetchBillData();
@@ -72,6 +72,17 @@ export default function HomeScreen() {
     [allExpenses]
   );
 
+  const userRestBalance = useMemo(() => {
+    return (userTotalBalance || 0) - (userAllTransactionAmount || 0);
+  }, [userTotalBalance, userAllTransactionAmount]);
+
+  useEffect(() => {
+    if (userAllTransactionAmount) {
+      setUserRestBalance(userRestBalance);
+    }
+  }, [userAllTransactionAmount, setUserRestBalance, userRestBalance]);
+
+
   if (
     userDataLoading ||
     addedMoneyDataLoading ||
@@ -88,8 +99,6 @@ export default function HomeScreen() {
     );
   }
 
-  const userRestBalance =
-    (userTotalBalance || 0) - (userAllTransactionAmount || 0);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -107,7 +116,7 @@ export default function HomeScreen() {
         <Text style={styles.greetingText}>Hii,</Text>
         <Text style={styles.userNameText}>{userData.full_name}</Text>
       </View>
-      <Feather name="bell" size={24} color={"#fff"} />
+      <Feather onPress={() => router.push("/notifications")} name="bell" size={24} color={"#fff"} />
     </View>
   ));
   Header.displayName = "Header";
@@ -155,7 +164,7 @@ export default function HomeScreen() {
   MemoizedTransaction.displayName = "MemoizedTransaction";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <FlatList
         data={topExpenses}
         keyExtractor={(item) => item.id || item.item_name + item.created_at}

@@ -30,7 +30,7 @@ const BillsScreen = () => {
   }
   
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <View
         style={{
           flexDirection: "row",

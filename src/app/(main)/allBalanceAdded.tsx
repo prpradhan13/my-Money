@@ -118,7 +118,7 @@ const AllBalanceAdded = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#fff" />

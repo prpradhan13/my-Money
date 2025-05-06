@@ -38,6 +38,10 @@ const MainLayout = () => {
               animation: "fade_from_bottom",
             }}
           />
+          <Stack.Screen
+            name="notifications"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </QueryClientProvider>
     </NotificationProvider>

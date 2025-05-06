@@ -4,6 +4,7 @@ export type UserProfileType = {
   full_name: string;
   emil: string;
   avatar_url: string;
+  push_token: string;
 };
 
 export type UserBalance = {

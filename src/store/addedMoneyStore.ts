@@ -4,13 +4,16 @@ import { UserBalance } from "../types/user.type";
 interface AddedMoney {
   userBalance: UserBalance[] | null;
   userTotalBalance: number;
+  calculatedUserRestBalance: number;
   monthlyBalance: Record<string, number>;
   setUserBalance: (value: UserBalance[]) => void;
+  setUserRestBalance: (value: number) => void;
 }
 
 export const useAddedMoneyStore = create<AddedMoney>((set) => ({
   userBalance: [],
   userTotalBalance: 0,
+  calculatedUserRestBalance: 0,
   monthlyBalance: {},
 
   setUserBalance: (balances) => {
@@ -30,6 +33,12 @@ export const useAddedMoneyStore = create<AddedMoney>((set) => ({
       userBalance: balances,
       userTotalBalance: totalBalance,
       monthlyBalance: monthly,
+    });
+  },
+
+  setUserRestBalance: (restBalance) => {
+    set({
+      calculatedUserRestBalance: restBalance,
     });
   },
 }));

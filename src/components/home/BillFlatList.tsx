@@ -162,7 +162,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    width: 300,
+    width: 330,
+    height: 100,
     borderLeftWidth: 4,
     shadowColor: "#000",
     shadowOffset: {
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     borderRadius: 10,
-    padding: 10,
+    padding: 14,
   },
   billDetails: {
     flex: 1,

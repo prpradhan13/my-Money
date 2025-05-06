@@ -97,7 +97,7 @@ const ExpenseScreen = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

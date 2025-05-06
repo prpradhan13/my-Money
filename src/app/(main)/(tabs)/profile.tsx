@@ -1,8 +1,9 @@
 import CreateUpcomingBill from "@/src/components/modal/CreateUpcomingBill";
+import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import useAuthStore from "@/src/store/authStore";
 import { UserProfileType } from "@/src/types/user.type";
 import { errorToast, getInitialLetter } from "@/src/utils/helperFunction";
-import { useUserAvatraUpdate } from "@/src/utils/query/userQuery";
+import { useGetUserDetails, useRemovePushToken, useUserAvatraUpdate } from "@/src/utils/query/userQuery";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
@@ -15,21 +16,18 @@ const ProfileScreen = () => {
   const [isCreateUpcomingBillVisible, setIsCreateUpcomingBillVisible] =
     useState(false);
   const [selectedImage, setSelectedImage] = useState("");
-
-  const { logout, user } = useAuthStore();
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
+
   const { mutate: upLoadImage, isPending: isUploading } = useUserAvatraUpdate();
+  const { mutate: removePushToken, isPending: isLogOutLoading } = useRemovePushToken();
 
   const userData = queryClient.getQueryData<UserProfileType>(["user", user?.id,]);
 
   const initialLetter = getInitialLetter(userData?.full_name);
 
   const handleLogOut = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-    }
+    removePushToken();
   };
 
   const pickImage = async () => {
@@ -65,7 +63,7 @@ const ProfileScreen = () => {
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <View style={styles.header}>
         <View style={{ position: "relative" }}>
           <View style={styles.profileImageContainer}>
@@ -114,6 +112,7 @@ const ProfileScreen = () => {
         <TouchableOpacity
           style={[styles.actionButton, styles.logoutButton]}
           onPress={handleLogOut}
+          disabled={isLogOutLoading}
         >
           <Ionicons name="log-out-outline" size={24} color="#fff" />
           <Text style={styles.actionButtonText}>Log out</Text>

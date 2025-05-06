@@ -3,6 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { supabase } from "../utils/lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useGetUserDetails } from "../utils/query/userQuery";
 
 interface AuthState {
   session: Session | null;
