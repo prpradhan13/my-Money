@@ -47,7 +47,7 @@ const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) =>
   const opacity = useSharedValue(1);
 
   const cData = categoryData.find(
-    (c) => c.cName === item.bill_templates.category
+    (c) => c.cName === item.bill_templates?.category
   ) || {
     color: "#607D8B",
     iconComponent: null,

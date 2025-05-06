@@ -99,14 +99,14 @@ export const useMarkBillAsPaid = () => {
   });
 };
 
-export const useStopBill = () => {
+export const useStopBillRecurring = () => {
   const { user } = useAuthStore();
   const userId = user?.id;
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (billId: string) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
       .from('bill_templates')
       .update({ is_recurring: false })
       .eq('user_id', userId)
@@ -116,15 +116,14 @@ export const useStopBill = () => {
         errorToast(error.message);
         throw new Error(error.message);
       }
-
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
       successToast("Bill stopped");
     },
-    onError: () => {
+    onError: (error) => {
       errorToast("Failed to stop bill");
+      console.log("error", error);
     },
   });
 };

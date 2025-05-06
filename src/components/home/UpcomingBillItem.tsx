@@ -3,7 +3,7 @@ import { UpcomingBillType } from "@/src/types/upcomingBill.type";
 import { formatCurrency } from "@/src/utils/helperFunction";
 import {
   useMarkBillAsPaid,
-  useStopBill,
+  useStopBillRecurring,
 } from "@/src/utils/query/upcomingBillQuery";
 import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
@@ -12,10 +12,10 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
   const { mutate: markBillAsPaid } = useMarkBillAsPaid();
-  const { mutate: stopBill } = useStopBill();
+  const { mutate: stopBillRecurring } = useStopBillRecurring();
 
   const cData = categoryData.find(
-    (c) => c.cName === bill.bill_templates.category
+    (c) => c.cName === bill.bill_templates?.category
   ) || {
     color: "#9ca3af",
     iconComponent: null,
@@ -28,7 +28,7 @@ const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
     markBillAsPaid(bill.id);
   };
 
-  const handleStopBill = () => {
+  const handleStopBill = (billTemplateId: string) => {
     Alert.alert(
       "Stop Bill",
       "Are you sure you want to stop this bill? This will stop all future occurrences of this bill.",
@@ -37,7 +37,7 @@ const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
         {
           text: "Stop",
           style: "destructive",
-          onPress: () => stopBill(bill.id),
+          onPress: () => stopBillRecurring(billTemplateId),
         },
       ]
     );
@@ -63,7 +63,7 @@ const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
           </View>
           <View style={styles.categoryInfo}>
             <Text style={styles.categoryText}>
-              {bill.bill_templates.category}
+              {bill.bill_templates?.category}
             </Text>
             <Text style={styles.dateText}>
               {dayjs(bill.due_date).format("DD MMM YYYY")}
@@ -77,7 +77,7 @@ const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
 
       <View style={styles.billContent}>
         <Text style={styles.billTitle}>{bill.title}</Text>
-        {bill.bill_templates.is_recurring && (
+        {bill.bill_templates?.is_recurring && (
           <View style={styles.recurringBadge}>
             <Feather name="repeat" size={14} color="#3b82f6" />
             <Text style={styles.recurringText}>Recurring</Text>
@@ -94,13 +94,15 @@ const UpcomingBillItem = ({ bill }: { bill: UpcomingBillType }) => {
           <Text style={styles.buttonText}>Mark as Paid</Text>
         </Pressable>
 
-        <Pressable
-          style={[styles.button, styles.stopButton]}
-          onPress={handleStopBill}
+        {bill.bill_templates?.is_recurring && (
+          <Pressable
+            style={[styles.button, styles.stopButton]}
+            onPress={() => handleStopBill(bill.bill_templates.id)}
         >
           <Feather name="x-circle" size={16} color="#fff" />
-          <Text style={styles.buttonText}>Stop</Text>
-        </Pressable>
+            <Text style={styles.buttonText}>Stop Recurring</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
