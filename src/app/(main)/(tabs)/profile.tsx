@@ -1,12 +1,8 @@
 import CreateUpcomingBill from "@/src/components/modal/CreateUpcomingBill";
 import useAuthStore from "@/src/store/authStore";
 import { UserProfileType } from "@/src/types/user.type";
-import {
-  errorToast,
-  getInitialLetter,
-  successToast,
-} from "@/src/utils/helperFunction";
-import { supabase } from "@/src/utils/lib/supabase";
+import { errorToast, getInitialLetter } from "@/src/utils/helperFunction";
+import { useUserAvatraUpdate } from "@/src/utils/query/userQuery";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
@@ -18,14 +14,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ProfileScreen = () => {
   const [isCreateUpcomingBillVisible, setIsCreateUpcomingBillVisible] =
     useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+
   const { logout, user } = useAuthStore();
   const queryClient = useQueryClient();
-  const [isUploading, setIsUploading] = useState(false);
+  const { mutate: upLoadImage, isPending: isUploading } = useUserAvatraUpdate();
 
-  const userData = queryClient.getQueryData<UserProfileType>([
-    "user",
-    user?.id,
-  ]);
+  const userData = queryClient.getQueryData<UserProfileType>(["user", user?.id,]);
 
   const initialLetter = getInitialLetter(userData?.full_name);
 
@@ -54,53 +49,11 @@ const ProfileScreen = () => {
       });
 
       if (!result.canceled) {
-        await uploadImage(result.assets[0].uri);
+        upLoadImage(result);
       }
     } catch (error) {
       console.error("Error picking image:", error);
       errorToast("Failed to pick image");
-    }
-  };
-
-  const uploadImage = async (uri: string) => {
-    try {
-      setIsUploading(true);
-
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      const fileExt = uri.split(".").pop();
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, blob, {
-          contentType: `image/${fileExt}`,
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user?.id);
-
-      if (updateError) throw updateError;
-
-      queryClient.invalidateQueries({ queryKey: ["user", user?.id] });
-
-      successToast("Profile picture updated successfully");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      errorToast("Failed to upload image");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -114,15 +67,17 @@ const ProfileScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.profileImageContainer}>
-          {userData?.avatar_url ? (
-            <Image
-              source={{ uri: userData?.avatar_url }}
-              style={styles.profileImage}
-            />
-          ) : (
-            <Text style={styles.initialLetter}>{initialLetter}</Text>
-          )}
+        <View style={{ position: "relative" }}>
+          <View style={styles.profileImageContainer}>
+            {userData?.avatar_url ? (
+              <Image
+                source={{ uri: userData?.avatar_url }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <Text style={styles.initialLetter}>{initialLetter}</Text>
+            )}
+          </View>
 
           <TouchableOpacity
             style={styles.cameraButton}
@@ -132,6 +87,7 @@ const ProfileScreen = () => {
             <Ionicons name="camera" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
+
         <Text style={styles.userName}>
           {user?.user_metadata?.full_name || "User"}
         </Text>
@@ -193,6 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   profileImage: {
     width: "100%",
@@ -205,7 +162,7 @@ const styles = StyleSheet.create({
   },
   cameraButton: {
     position: "absolute",
-    bottom: -2,
+    bottom: 5,
     right: -2,
     backgroundColor: "#007AFF",
     width: 36,

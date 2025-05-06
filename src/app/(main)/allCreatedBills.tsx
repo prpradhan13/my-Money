@@ -1,10 +1,20 @@
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
 import { categoryData } from "@/src/constants/Colors";
 import { formatCurrency } from "@/src/utils/helperFunction";
-import { useDeleteBill, useGetAllCreatedBills } from "@/src/utils/query/upcomingBillQuery";
+import {
+  useDeleteBill,
+  useGetAllCreatedBills,
+} from "@/src/utils/query/upcomingBillQuery";
 import Feather from "@expo/vector-icons/Feather";
 import React from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const AllCreatedBillsScreen = () => {
   const { data, isLoading } = useGetAllCreatedBills();
@@ -39,6 +49,20 @@ const AllCreatedBillsScreen = () => {
   const getCategoryColor = (categoryName: string) => {
     const category = categoryData.find((cat) => cat.cName === categoryName);
     return category?.color || "#9ca3af";
+  };
+
+  const handleDeleteBill = (billId: string) => {
+    Alert.alert("Delete Bill", "Are you sure you want to delete this bill?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteBill(billId),
+      },
+    ]);
   };
 
   return (
@@ -83,9 +107,7 @@ const AllCreatedBillsScreen = () => {
                 <Text style={styles.billTitle}>{item.title}</Text>
                 <Text style={styles.billAmount}>
                   {formatCurrency(item.amount)}
-                  <Text style={{ fontSize: 12, color: "#9ca3af" }}>
-                    /month
-                  </Text>
+                  <Text style={{ fontSize: 12, color: "#9ca3af" }}>/month</Text>
                 </Text>
               </View>
 
@@ -105,9 +127,9 @@ const AllCreatedBillsScreen = () => {
                       Remind {item.remind_before_days} days before
                     </Text>
                   </View>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => deleteBill(item.id)}
+                    onPress={() => handleDeleteBill(item.id)}
                   >
                     <Feather name="trash-2" size={16} color="#ef4444" />
                   </TouchableOpacity>
