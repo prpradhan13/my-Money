@@ -13,3 +13,13 @@ export type UserBalance = {
   balance: number;
   created_at: string;
 };
+
+export type UserBalanceViewType = {
+  id: number;
+  userId: string;
+  rest_balance: number;
+  total_added_money: number;
+  total_purchase_amount: number;
+  push_token: string;
+};
+

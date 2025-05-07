@@ -1,5 +1,6 @@
-import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
+import DefaultLoader from "@/src/components/loader/DefaultLoader";
 import { formatCurrency } from "@/src/utils/helperFunction";
+import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
 import Feather from "@expo/vector-icons/Feather";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
@@ -15,12 +16,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const AllBalanceAdded = () => {
-  const { userBalance } = useAddedMoneyStore();
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  const { data: userBalance, isLoading: userBalanceLoading } = useGetUserAllAddedMoney();
 
   const groupedTransactions = useMemo(() => {
     if (!userBalance) return [];
@@ -57,6 +59,10 @@ const AllBalanceAdded = () => {
         data: transactions
     }));
   }, [userBalance, startDate, endDate]);
+
+  if (userBalanceLoading) {
+    return <DefaultLoader />;
+  }
 
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartDatePicker(false);

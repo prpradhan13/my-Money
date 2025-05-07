@@ -28,8 +28,7 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const isOpen = expanded[category];
 
   const categoryTotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
-  const percentUsed =
-    totalBalance > 0 ? Math.min((categoryTotal / totalBalance) * 100, 100) : 0;
+  const percentUsed = totalBalance > 0 ? Math.min((categoryTotal / totalBalance) * 100, 100) : 0;
 
   const toggleCategory = (category: string) => {
     setExpanded((prev) => ({

@@ -80,6 +80,8 @@ export const useMarkBillAsPaid = () => {
     },
     onSuccess: (returnedData) => {
       queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
+      queryClient.invalidateQueries({ queryKey: ["allCreatedBills", userId] });
+      queryClient.invalidateQueries({ queryKey: ["user_balances", userId] });
       queryClient.setQueryData(
         ["userAllPurchase", userId],
         (old: PurchaseDetailsType[]) => {
@@ -119,6 +121,7 @@ export const useStopBillRecurring = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["upcomingBills", userId] });
+      queryClient.invalidateQueries({ queryKey: ["allCreatedBills", userId] });
       successToast("Bill stopped");
     },
     onError: (error) => {

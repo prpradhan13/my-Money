@@ -13,25 +13,48 @@ import {
   groupedExpensesFunc,
   grpByCategoryReducer,
 } from "@/src/utils/helperFunction";
+import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
 import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ExpenseScreen = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [balanceView, setBalanceView] = useState<"monthly" | "remaining">("monthly");
 
+  const {
+    data: addedMoneyData,
+    isLoading: addedMoneyDataLoading,
+    refetch: refetchAddedMoneyData,
+  } = useGetUserAllAddedMoney();
+
   const { user } = useAuthStore();
-  const { monthlyBalance } = useAddedMoneyStore();
   const { allExpenses: expenseQueryData } = useTransactionStore();
+  const { setUserBalance } = useAddedMoneyStore();
+
+  const monthlyBalance = useMemo(() => {
+    if (!addedMoneyData) return {};
+    return addedMoneyData.reduce((acc, item) => {
+      const month = getMonthKey(new Date(item.created_at));
+      acc[month] = (acc[month] || 0) + item.balance;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [addedMoneyData]);
 
   const balanceForMonth =
     (selectedMonth && monthlyBalance?.[selectedMonth]) || 0;
 
   const [showBalance, setShowBalance] = useState(balanceForMonth);
+
+  useEffect(() => {
+    if (addedMoneyData) {
+      setUserBalance(addedMoneyData);
+    }
+  }, [addedMoneyData, setUserBalance]);
 
   const userId = user?.id;
   const isLoading = !userId || expenseQueryData === undefined;
@@ -85,7 +108,13 @@ const ExpenseScreen = () => {
     created_at: e.created_at,
   }));
 
-  if (isLoading || (groupedExpenses.length > 0 && !selectedMonth))
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetchAddedMoneyData();
+    setRefreshing(false);
+  };
+
+  if (isLoading || addedMoneyDataLoading || (groupedExpenses.length > 0 && !selectedMonth))
     return <DefaultLoader />;
 
   if (!expenseQueryData || expenseQueryData.length === 0) {
@@ -101,6 +130,9 @@ const ExpenseScreen = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         <View style={styles.headerContainer}>
           <View style={styles.headerTop}>

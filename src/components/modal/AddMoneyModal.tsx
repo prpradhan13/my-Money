@@ -58,15 +58,9 @@ const AddMoneyModal = ({
     const formData = { balance: numericMoney, created_at: timestamp };
 
     mutate(formData, {
-      onSuccess: (returnedData) => {
-        queryClient.setQueryData(
-          ["addedMoney", userId],
-          (old: UserBalance[]) => {
-            return [...(old ?? []), returnedData];
-          }
-        );
-
-        setUserBalance([...(userBalance ?? []), returnedData]);
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["addedMoney", userId] });
+        queryClient.invalidateQueries({ queryKey: ["user_balances", userId] });
         setMoney("");
         setSelectedDate(new Date());
         setModalVisible(false);

@@ -40,22 +40,18 @@ export const useEnterBalance = () => {
 
             const { balance, created_at } = formData;
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("added_money")
                 .insert({
                     user_id: userId,
                     balance,
                     created_at
                 })
-                .select("*")
-                .single();
             
             if (error) {
                 errorToast(error.message)
                 throw new Error(error.message);
             }
-
-            return data as UserBalance;
         }
     })
 }

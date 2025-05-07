@@ -1,7 +1,7 @@
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
 import { notificationIcons } from "@/src/constants/Colors";
 import { NotificationsType } from "@/src/types/notification.type";
-import { useGetAllNotifications, useMarkAllNotificationsAsRead, useMarkNotificationAsRead } from "@/src/utils/query/notificationQuery";
+import { useGetAllNotifications, useGetAllUnreadNotifications, useMarkAllNotificationsAsRead, useMarkNotificationAsRead } from "@/src/utils/query/notificationQuery";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
@@ -68,7 +68,7 @@ const NotificationItem = ({
   index: number;
 }) => {
   const { colors } = useTheme();
-  const { mutate: markAsRead, isPending: isMarkingAsRead } = useMarkNotificationAsRead();
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
 
   const icon = notificationIcons.find(
     (icon) => icon.name === notification.type
@@ -122,19 +122,18 @@ const NotificationsScreen = () => {
   const [isRefetching, setIsRefetching] = useState(false);
   const { colors } = useTheme();
 
-  const { data: notifications, isLoading, refetch } = useGetAllNotifications();
+  const { data: notifications, isLoading, refetch } = useGetAllUnreadNotifications();
   const { mutate: markAllAsRead, isPending: isMarkingAllAsRead } = useMarkAllNotificationsAsRead();
 
 
   if (isLoading) return <DefaultLoader />;
   if (isLoading) return <DefaultLoader />;
 
-  if (!notifications || notifications.length === 0)
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>No notifications</Text>
-      </View>
-    );
+  if (!notifications || notifications.length === 0) return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>No notifications</Text>
+    </View>
+  );
 
   const groupedSections = notifications.reduce((acc, item) => {
     const date = dayjs(item.created_at).format("DD MMM YYYY");
@@ -205,6 +204,11 @@ const NotificationsScreen = () => {
         )}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
+        }
+        ListEmptyComponent={
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>No notifications</Text>
+          </View>
         }
       />
     </SafeAreaView>

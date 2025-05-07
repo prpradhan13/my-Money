@@ -1,9 +1,8 @@
 import CreateUpcomingBill from "@/src/components/modal/CreateUpcomingBill";
-import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import useAuthStore from "@/src/store/authStore";
 import { UserProfileType } from "@/src/types/user.type";
 import { errorToast, getInitialLetter } from "@/src/utils/helperFunction";
-import { useGetUserDetails, useRemovePushToken, useUserAvatraUpdate } from "@/src/utils/query/userQuery";
+import { useRemovePushToken, useUserAvatraUpdate } from "@/src/utils/query/userQuery";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";

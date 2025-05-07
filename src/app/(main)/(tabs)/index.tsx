@@ -2,13 +2,12 @@ import BillFlatList from "@/src/components/home/BillFlatList";
 import TransactionList from "@/src/components/home/TransactionList";
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
 import AddMoneyModal from "@/src/components/modal/AddMoneyModal";
-import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import { useTransactionStore } from "@/src/store/transactionStore";
 import { formatCurrency } from "@/src/utils/helperFunction";
-import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
+import { useGetAllUnreadNotifications } from "@/src/utils/query/notificationQuery";
 import { useGetUserAllPurchases } from "@/src/utils/query/purchaseQuery";
 import { useGetUpcomingBills } from "@/src/utils/query/upcomingBillQuery";
-import { useGetUserDetails } from "@/src/utils/query/userQuery";
+import { useGetUserBalanceFromView, useGetUserDetails } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
 import { Link, router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -28,11 +27,6 @@ export default function HomeScreen() {
 
   const { data: userData, isLoading: userDataLoading } = useGetUserDetails();
   const {
-    data: addedMoneyData,
-    isLoading: addedMoneyDataLoading,
-    refetch: refetchAddedMoneyData,
-  } = useGetUserAllAddedMoney();
-  const {
     data: billData,
     isLoading: billDataLoading,
     refetch: refetchBillData,
@@ -42,10 +36,11 @@ export default function HomeScreen() {
     isLoading: purchasesLoading,
     refetch: refetchPurchasesData,
   } = useGetUserAllPurchases();
+  const { data: notificationsData } = useGetAllUnreadNotifications();
 
-  const { allExpenses, userAllTransactionAmount, setAllExpenses } =
-    useTransactionStore();
-  const { userTotalBalance, setUserBalance, setUserRestBalance } = useAddedMoneyStore();
+  const { data: userBalanceViewData, isLoading: userBalanceViewDataLoading, refetch: refetchUserBalanceViewData } = useGetUserBalanceFromView();
+
+  const { allExpenses, setAllExpenses } = useTransactionStore();
 
   useEffect(() => {
     refetchBillData();
@@ -58,34 +53,14 @@ export default function HomeScreen() {
     }
   }, [allExpenses, purchasesData, setAllExpenses]);
 
-  useEffect(() => {
-    if (addedMoneyData) {
-      const total = addedMoneyData.reduce((sum, item) => sum + item.balance, 0);
-      if (total !== userTotalBalance) {
-        setUserBalance(addedMoneyData);
-      }
-    }
-  }, [addedMoneyData, setUserBalance, userTotalBalance]);
-
   const topExpenses = useMemo(
     () => allExpenses?.slice(0, 10) ?? [],
     [allExpenses]
   );
 
-  const userRestBalance = useMemo(() => {
-    return (userTotalBalance || 0) - (userAllTransactionAmount || 0);
-  }, [userTotalBalance, userAllTransactionAmount]);
-
-  useEffect(() => {
-    if (userAllTransactionAmount) {
-      setUserRestBalance(userRestBalance);
-    }
-  }, [userAllTransactionAmount, setUserRestBalance, userRestBalance]);
-
-
   if (
     userDataLoading ||
-    addedMoneyDataLoading ||
+    userBalanceViewDataLoading ||
     purchasesLoading ||
     billDataLoading
   )
@@ -105,7 +80,7 @@ export default function HomeScreen() {
     await Promise.all([
       refetchBillData(),
       refetchPurchasesData(),
-      refetchAddedMoneyData(),
+      refetchUserBalanceViewData(),
     ]);
     setRefreshing(false);
   };
@@ -116,7 +91,14 @@ export default function HomeScreen() {
         <Text style={styles.greetingText}>Hii,</Text>
         <Text style={styles.userNameText}>{userData.full_name}</Text>
       </View>
-      <Feather onPress={() => router.push("/notifications")} name="bell" size={24} color={"#fff"} />
+        <Pressable onPress={() => router.push("/notifications")} hitSlop={20} style={styles.notificationWrapper}>
+          <Feather onPress={() => router.push("/notifications")} name="bell" size={24} color={"#fff"} />
+          {notificationsData && notificationsData.length > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationText}>{notificationsData.length}</Text>
+            </View>
+          )}
+        </Pressable>
     </View>
   ));
   Header.displayName = "Header";
@@ -169,11 +151,14 @@ export default function HomeScreen() {
         data={topExpenses}
         keyExtractor={(item) => item.id || item.item_name + item.created_at}
         renderItem={({ item }) => <MemoizedTransaction item={item} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         ListHeaderComponent={
           <>
             <Header userData={userData} />
             <BalanceSection
-              userRestBalance={userRestBalance}
+              userRestBalance={userBalanceViewData?.rest_balance ?? 0}
               onAddMoneyPress={() => setAddMoneyModalVisible(true)}
             />
             {billData && billData.length > 0 && (
@@ -186,9 +171,7 @@ export default function HomeScreen() {
           <Text style={styles.noTransactionsText}>No Transactions</Text>
         }
         contentContainerStyle={{ paddingBottom: 50 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        
         showsVerticalScrollIndicator={false}
       />
 
@@ -224,15 +207,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 24,
+    backgroundColor: "#1A1A1A",
+    borderRadius: 20,
+    padding: 24,
   },
   greetingText: {
     color: "#fff",
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "300",
   },
   userNameText: {
     color: "#fff",
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "600",
   },
   balanceContainer: {
@@ -312,5 +298,25 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  notificationWrapper: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

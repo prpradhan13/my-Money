@@ -2,7 +2,7 @@ import useAuthStore from "@/src/store/authStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import Toast from "react-native-toast-message";
-import { UserProfileType } from "@/src/types/user.type";
+import { UserBalanceViewType, UserProfileType } from "@/src/types/user.type";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
@@ -66,9 +66,8 @@ export const useUserAvatraUpdate = () => {
         throw new Error(`Image upload failed: ${uploadError.message}`);
       }
 
-      const publicUrl= supabase.storage
-        .from("avatars")
-        .getPublicUrl(fName).data.publicUrl;
+      const publicUrl = supabase.storage.from("avatars").getPublicUrl(fName)
+        .data.publicUrl;
 
       const { data, error } = await supabase
         .from("profiles")
@@ -120,5 +119,28 @@ export const useRemovePushToken = () => {
     onError: (error) => {
       console.log(error);
     },
+  });
+};
+
+export const useGetUserBalanceFromView = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+  
+  return useQuery<UserBalanceViewType>({
+    queryKey: ["user_balances", userId],
+    queryFn: async () => {
+      const { data: user_balances, error } = await supabase
+        .from("user_balances")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return user_balances;
+    },
+    enabled: !!userId,
   });
 };

@@ -4,7 +4,7 @@ import { UpcomingBillType } from "@/src/types/upcomingBill.type";
 import { formatCurrency } from "@/src/utils/helperFunction";
 import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import {
@@ -67,12 +67,13 @@ const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) =>
 
   const handlePressIn = () => {
     scale.value = withSpring(0.98, { damping: 10, stiffness: 400 });
-    opacity.value = withTiming(0.9, { duration: 100 });
+    opacity.value = withTiming(0.9, { duration: 50 });
+    router.push(`/bills`);
   };
 
   const handlePressOut = () => {
     scale.value = withSpring(1, { damping: 10, stiffness: 400 });
-    opacity.value = withTiming(1, { duration: 100 });
+    opacity.value = withTiming(1, { duration: 50 });
   };
 
   return (
@@ -126,7 +127,7 @@ const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) =>
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    // marginTop: 16,
     marginBottom: 24,
   },
   header: {

@@ -28,6 +28,31 @@ export const useGetAllNotifications = () => {
   });
 };
 
+export const useGetAllUnreadNotifications = () => {
+  const { user } = useAuthStore();
+
+  return useQuery<NotificationsType[]>({
+    queryKey: ["notifications", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user?.id)
+        .eq("read", false)
+        .order("created_at", { ascending: false });
+        
+      if (error) {
+        errorToast(error.message);
+        return [];
+      }
+
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+};
+
+
 export const useMarkAllNotificationsAsRead = () => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
