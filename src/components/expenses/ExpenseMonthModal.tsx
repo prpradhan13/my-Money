@@ -1,21 +1,24 @@
-import { MonthExpenseType } from "@/src/types/purchase.type";
+import { useGetUserMonthlySummary } from "@/src/utils/query/userQuery";
 import dayjs from "dayjs";
 import React from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import DefaultLoader from "../loader/DefaultLoader";
 
 interface ExpenseMonthModalProps {
   showMonthPicker: boolean;
-  groupedExpenses: MonthExpenseType[];
   setSelectedMonth: (value: string) => void;
   setShowMonthPicker: (value: boolean) => void;
 }
 
 const ExpenseMonthModal = ({
-  groupedExpenses,
   showMonthPicker,
   setSelectedMonth,
   setShowMonthPicker,
 }: ExpenseMonthModalProps) => {
+
+  const { data: userMonthlySummaryData, isLoading: userMonthlySummaryLoading } = useGetUserMonthlySummary();
+
+  if(userMonthlySummaryLoading) return <DefaultLoader />;
     
   return (
     <Modal visible={showMonthPicker} transparent animationType="slide" onRequestClose={() => setShowMonthPicker(false)}>
@@ -25,7 +28,7 @@ const ExpenseMonthModal = ({
             Select Month
           </Text>
           <ScrollView>
-            {groupedExpenses.map(({ month }) => (
+            {userMonthlySummaryData?.map(({ month }) => (
               <Pressable
                 key={month}
                 onPress={() => {

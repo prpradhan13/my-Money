@@ -3,118 +3,107 @@ import { DonutChart } from "@/src/components/expenses/DonutChart";
 import ExpenseMonthModal from "@/src/components/expenses/ExpenseMonthModal";
 import WeeklyBarChart from "@/src/components/expenses/WeeklyBarChart";
 import DefaultLoader from "@/src/components/loader/DefaultLoader";
-import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import useAuthStore from "@/src/store/authStore";
+import { useMonthlySummaryStore } from "@/src/store/monthlySummaryStore";
 import { useTransactionStore } from "@/src/store/transactionStore";
 import { TCategoryItems } from "@/src/types/purchase.type";
 import {
   formatCurrency,
   getMonthKey,
-  groupedExpensesFunc,
   grpByCategoryReducer,
 } from "@/src/utils/helperFunction";
-import { useGetUserAllAddedMoney } from "@/src/utils/query/addedMoneyQuery";
+import { useGetUserMonthlySummary } from "@/src/utils/query/userQuery";
 import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ExpenseScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [balanceView, setBalanceView] = useState<"monthly" | "remaining">("monthly");
-
-  const {
-    data: addedMoneyData,
-    isLoading: addedMoneyDataLoading,
-    refetch: refetchAddedMoneyData,
-  } = useGetUserAllAddedMoney();
+  const [balanceView, setBalanceView] = useState<"monthly" | "remaining">(
+    "monthly"
+  );
 
   const { user } = useAuthStore();
   const { allExpenses: expenseQueryData } = useTransactionStore();
-  const { setUserBalance } = useAddedMoneyStore();
-
-  const monthlyBalance = useMemo(() => {
-    if (!addedMoneyData) return {};
-    return addedMoneyData.reduce((acc, item) => {
-      const month = getMonthKey(new Date(item.created_at));
-      acc[month] = (acc[month] || 0) + item.balance;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [addedMoneyData]);
-
-  const balanceForMonth =
-    (selectedMonth && monthlyBalance?.[selectedMonth]) || 0;
-
-  const [showBalance, setShowBalance] = useState(balanceForMonth);
-
-  useEffect(() => {
-    if (addedMoneyData) {
-      setUserBalance(addedMoneyData);
-    }
-  }, [addedMoneyData, setUserBalance]);
-
   const userId = user?.id;
   const isLoading = !userId || expenseQueryData === undefined;
 
-  // Group expenses by month
-  const groupedExpenses = useMemo(
-    () => groupedExpensesFunc(expenseQueryData),
-    [expenseQueryData]
-  );
+  const { data: userMonthlySummaryData, isLoading: userMonthlySummaryLoading, refetch: refetchUserMonthlySummary } = useGetUserMonthlySummary();
+  const { setMonthlyData } = useMonthlySummaryStore();
 
   useEffect(() => {
-    if (groupedExpenses.length > 0 && !selectedMonth) {
-      setSelectedMonth(groupedExpenses[0].month);
+    if (userMonthlySummaryData && !selectedMonth) {
+      setSelectedMonth(userMonthlySummaryData[0].month);
     }
-  }, [groupedExpenses, selectedMonth]);
+  }, [userMonthlySummaryData, selectedMonth]);
 
   useEffect(() => {
-    if (selectedMonth) {
-      setShowBalance(balanceForMonth);
+    if (userMonthlySummaryData) {
+      setMonthlyData(userMonthlySummaryData);
     }
-  }, [selectedMonth, balanceForMonth]);
+  }, [setMonthlyData, userMonthlySummaryData]);
 
-  const filteredExpenses = useMemo(() => {
-    if (!expenseQueryData || !selectedMonth) return [];
-
-    return expenseQueryData.filter((expense) => {
-      const expenseMonth = getMonthKey(new Date(expense.created_at));
-      return expenseMonth === selectedMonth;
+  const monthlyData = useMemo(() => {
+    return userMonthlySummaryData?.find((d) => {
+      const monthKey = new Date(d.month);
+      return monthKey.getMonth() === new Date(selectedMonth).getMonth();
     });
-  }, [expenseQueryData, selectedMonth]);
+  }, [userMonthlySummaryData, selectedMonth]);
 
-  const grpByCategory = filteredExpenses.reduce<
-    Record<string, TCategoryItems[]>
-  >(grpByCategoryReducer, {});
+  const balanceForMonth = monthlyData?.total_added ?? 0;
+  const remainingBalance = monthlyData?.balance ?? 0;
+  const totalSpend = monthlyData?.total_spent ?? 0;
 
-  const categoryArray = Object.entries(grpByCategory).map(
+  // showBalance depends on toggle
+  const [showBalance, setShowBalance] = useState(0);
+
+  useEffect(() => {
+    if (balanceView === "monthly") {
+      setShowBalance(balanceForMonth);
+    } else {
+      setShowBalance(remainingBalance);
+    }
+  }, [balanceView, balanceForMonth, remainingBalance]);
+
+  const filteredExpenses = userMonthlySummaryData?.find((expense) => expense.month === selectedMonth)
+
+  const grpByCategory = useMemo(() => {
+    return filteredExpenses?.purchase_items.reduce<Record<string, TCategoryItems[]>>(
+      grpByCategoryReducer,
+      {}
+    );
+  }, [filteredExpenses]);
+
+  const categoryArray = Object.entries(grpByCategory ?? {}).map(
     ([category, items]) => ({
       category,
       items,
     })
   );
 
-  const totalSpend = useMemo(() => {
-    return filteredExpenses.reduce((sum, e) => sum + (e.total || 0), 0);
-  }, [filteredExpenses]);
-
-  const remainingBalance = balanceForMonth - totalSpend;
-
-  const weeklyBarData = filteredExpenses.map((e) => ({
+  const weeklyBarData = filteredExpenses?.purchase_items.map((e) => ({
     price: e.total,
     created_at: e.created_at,
   }));
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetchAddedMoneyData();
+    await refetchUserMonthlySummary();
     setRefreshing(false);
   };
 
-  if (isLoading || addedMoneyDataLoading || (groupedExpenses.length > 0 && !selectedMonth))
+  if (isLoading || userMonthlySummaryLoading || !selectedMonth)
     return <DefaultLoader />;
 
   if (!expenseQueryData || expenseQueryData.length === 0) {
@@ -163,10 +152,12 @@ const ExpenseScreen = () => {
                     balanceView === "monthly" && styles.toggleButtonActive,
                   ]}
                 >
-                  <Text style={[
-                    styles.toggleText,
-                    balanceView === "monthly" && styles.toggleTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.toggleText,
+                      balanceView === "monthly" && styles.toggleTextActive,
+                    ]}
+                  >
                     Monthly
                   </Text>
                 </Pressable>
@@ -180,10 +171,12 @@ const ExpenseScreen = () => {
                     balanceView === "remaining" && styles.toggleButtonActive,
                   ]}
                 >
-                  <Text style={[
-                    styles.toggleText,
-                    balanceView === "remaining" && styles.toggleTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.toggleText,
+                      balanceView === "remaining" && styles.toggleTextActive,
+                    ]}
+                  >
                     Remaining
                   </Text>
                 </Pressable>
@@ -213,17 +206,21 @@ const ExpenseScreen = () => {
             <View style={styles.summaryContainer}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Total Budget</Text>
-                <Text style={styles.summaryValue}>{formatCurrency(balanceForMonth)}</Text>
+                <Text style={styles.summaryValue}>
+                  {formatCurrency(balanceForMonth)}
+                </Text>
               </View>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Remaining</Text>
-                <Text style={styles.summaryValue}>{formatCurrency(remainingBalance)}</Text>
+                <Text style={styles.summaryValue}>
+                  {formatCurrency(remainingBalance)}
+                </Text>
               </View>
             </View>
           </View>
         </View>
 
-        <WeeklyBarChart data={weeklyBarData} />
+        <WeeklyBarChart data={weeklyBarData ?? []} />
 
         <View>
           <Text style={styles.sectionTitle}>Categories</Text>
@@ -240,7 +237,6 @@ const ExpenseScreen = () => {
 
       {showMonthPicker && (
         <ExpenseMonthModal
-          groupedExpenses={groupedExpenses}
           setSelectedMonth={setSelectedMonth}
           setShowMonthPicker={setShowMonthPicker}
           showMonthPicker={showMonthPicker}

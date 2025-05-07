@@ -2,7 +2,7 @@ import useAuthStore from "@/src/store/authStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import Toast from "react-native-toast-message";
-import { UserBalanceViewType, UserProfileType } from "@/src/types/user.type";
+import { UserBalanceViewType, UserMonthlySummaryType, UserProfileType } from "@/src/types/user.type";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
@@ -144,3 +144,26 @@ export const useGetUserBalanceFromView = () => {
     enabled: !!userId,
   });
 };
+
+export const useGetUserMonthlySummary = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  return useQuery<UserMonthlySummaryType[]>({
+    queryKey: ["user_monthly_summary", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_monthly_summary")
+        .select("*")
+        .eq("user_id", userId)
+        .order("month", { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data;
+    },
+    enabled: !!userId,
+  });
+}

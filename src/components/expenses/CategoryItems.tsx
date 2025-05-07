@@ -4,6 +4,7 @@ import {
 } from "@/src/constants/Animation";
 import { categoryData } from "@/src/constants/Colors";
 import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
+import { useMonthlySummaryStore } from "@/src/store/monthlySummaryStore";
 import { formatCurrency } from "@/src/utils/helperFunction";
 import Feather from "@expo/vector-icons/Feather";
 import React, { useState } from "react";
@@ -22,10 +23,13 @@ interface CategoryItemsProps {
 
 const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const { monthlyBalance } = useAddedMoneyStore();
-  const totalBalance = month ? monthlyBalance[month] || 0 : 0;
+  const { getTotalAdded, getTotalSpent } = useMonthlySummaryStore();
 
   const isOpen = expanded[category];
+
+  const totalAdded = getTotalAdded(month);
+  const totalSpent = getTotalSpent(month);
+  const totalBalance = totalAdded - totalSpent;
 
   const categoryTotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
   const percentUsed = totalBalance > 0 ? Math.min((categoryTotal / totalBalance) * 100, 100) : 0;
