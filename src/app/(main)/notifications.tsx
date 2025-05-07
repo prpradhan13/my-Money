@@ -1,9 +1,22 @@
+import DefaultLoader from "@/src/components/loader/DefaultLoader";
+import { notificationIcons } from "@/src/constants/Colors";
+import { NotificationsType } from "@/src/types/notification.type";
+import { useGetAllNotifications, useMarkAllNotificationsAsRead, useMarkNotificationAsRead } from "@/src/utils/query/notificationQuery";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
+import dayjs from "dayjs";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  SectionList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Notification {
@@ -51,41 +64,40 @@ const NotificationItem = ({
   notification,
   index,
 }: {
-  notification: Notification;
+  notification: NotificationsType;
   index: number;
 }) => {
   const { colors } = useTheme();
+  const { mutate: markAsRead, isPending: isMarkingAsRead } = useMarkNotificationAsRead();
 
-  const getIconColor = () => {
-    switch (notification.type) {
-      case "success":
-        return "#4CAF50";
-      case "warning":
-        return "#FFC107";
-      case "info":
-        return "#2196F3";
-      default:
-        return colors.text;
-    }
-  };
+  const icon = notificationIcons.find(
+    (icon) => icon.name === notification.type
+  );
+
+  if (!icon) return null;
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
       <Pressable
+        onPress={() => {
+          if (!notification.read) {
+            markAsRead(notification.id);
+          }
+        }}
         style={[
           styles.notificationItem,
           { backgroundColor: notification.read ? "transparent" : colors.card },
-          { borderLeftColor: getIconColor(), borderLeftWidth: 4 },
+          { borderLeftColor: icon.color ?? "yellow", borderLeftWidth: 4 },
         ]}
       >
         <View style={styles.iconContainer}>
-          <BlurView intensity={20} style={styles.iconBlur}>
-            <Ionicons
-              name={notification.icon}
+          <View style={styles.iconBlur}>
+            <Feather
+              name={"alert-triangle"}
               size={24}
-              color={getIconColor()}
+              color={icon.color || "yellow"}
             />
-          </BlurView>
+          </View>
         </View>
         <View style={styles.contentContainer}>
           <View style={styles.titleContainer}>
@@ -95,9 +107,11 @@ const NotificationItem = ({
             {!notification.read && <View style={styles.unreadDot} />}
           </View>
           <Text style={[styles.message, { color: colors.text }]}>
-            {notification.message}
+            {notification.description}
           </Text>
-          <Text style={styles.time}>{notification.time}</Text>
+          <Text style={styles.time}>
+            {dayjs(notification.created_at).format("DD MMM YYYY")}
+          </Text>
         </View>
       </Pressable>
     </View>
@@ -105,7 +119,44 @@ const NotificationItem = ({
 };
 
 const NotificationsScreen = () => {
+  const [isRefetching, setIsRefetching] = useState(false);
   const { colors } = useTheme();
+
+  const { data: notifications, isLoading, refetch } = useGetAllNotifications();
+  const { mutate: markAllAsRead, isPending: isMarkingAllAsRead } = useMarkAllNotificationsAsRead();
+
+
+  if (isLoading) return <DefaultLoader />;
+  if (isLoading) return <DefaultLoader />;
+
+  if (!notifications || notifications.length === 0)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>No notifications</Text>
+      </View>
+    );
+
+  const groupedSections = notifications.reduce((acc, item) => {
+    const date = dayjs(item.created_at).format("DD MMM YYYY");
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(item);
+    return acc;
+  }, {} as Record<string, NotificationsType[]>);
+
+  const sections = Object.entries(groupedSections).map(
+    ([date, notifications]) => ({
+      title: date,
+      data: notifications,
+    })
+  );
+
+  const handleRefresh = async () => {
+    setIsRefetching(true);
+    await refetch();
+    setIsRefetching(false);
+  };
 
   return (
     <SafeAreaView
@@ -117,6 +168,7 @@ const NotificationsScreen = () => {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          paddingHorizontal: 16,
         }}
       >
         <View style={styles.headerContent}>
@@ -130,25 +182,31 @@ const NotificationsScreen = () => {
             Notifications
           </Text>
         </View>
-        <Pressable style={styles.markAllButton}>
+        <Pressable onPress={() => markAllAsRead()} disabled={isMarkingAllAsRead} style={styles.markAllButton}>
           <Text style={[styles.markAllText, { color: colors.primary }]}>
             Mark all as read
           </Text>
         </Pressable>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-      >
-        {notifications.map((notification, index) => (
-          <NotificationItem
-            key={notification.id}
-            notification={notification}
-            index={index}
-          />
-        ))}
-      </ScrollView>
+        renderItem={({ item, index }) => (
+          <NotificationItem notification={item} index={index} />
+        )}
+        renderSectionHeader={({ section }) => (
+          <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+            <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>
+              {section.title}
+            </Text>
+          </View>
+        )}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
+        }
+      />
     </SafeAreaView>
   );
 };
@@ -159,12 +217,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-  },
   headerContent: {
-    padding: 16,
     flexDirection: "row",
     gap: 16,
     alignItems: "center",
@@ -206,6 +259,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 12,
     overflow: "hidden",
+    backgroundColor: "#2a2a2a",
   },
   contentContainer: {
     flex: 1,

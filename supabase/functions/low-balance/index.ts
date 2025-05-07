@@ -72,8 +72,9 @@ Deno.serve(async (req) => {
     if (restBalance < LOW_BALANCE_THRESHOLD) {
       const { error: notificationError } = await supabase.from("notifications").insert({
         user_id: userId,
-        title: "⚠️ Low Balance Alert",
+        title: "Low Balance Alert",
         description: `Your current balance is ₹${restBalance.toLocaleString()}. Please add more money to maintain a minimum balance of ₹${LOW_BALANCE_THRESHOLD.toLocaleString()}.`,
+        type: "warning",
       });
 
       if (notificationError) {

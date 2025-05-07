@@ -101,3 +101,21 @@ export const categoryData = [
     iconProps: {},
   },
 ];
+
+export const notificationIcons = [
+  {
+    name: "success",
+    icon: "checkmark-circle",
+    color: "#4CAF50",
+  },
+  {
+    name: "warning",
+    icon: "alert-triangle",
+    color: "#FF9800",
+  },
+  {
+    name: "info",
+    icon: "alert-circle",
+    color: "#2196F3",
+  },
+];

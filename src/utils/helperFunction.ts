@@ -30,7 +30,7 @@ export const successToast = (successMessage: string) => {
   Toast.show({
     type: "success",
     text1: successMessage,
-    position: "bottom",
+    position: "top",
   });
 };
 
