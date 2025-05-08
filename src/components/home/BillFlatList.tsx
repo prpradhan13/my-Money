@@ -1,4 +1,3 @@
-import { AnimatedPressable } from "@/src/constants/Animation";
 import { categoryData } from "@/src/constants/Colors";
 import { UpcomingBillType } from "@/src/types/upcomingBill.type";
 import { formatCurrency } from "@/src/utils/helperFunction";
@@ -7,13 +6,6 @@ import dayjs from "dayjs";
 import { Link, router } from "expo-router";
 import React from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import {
-  FadeInRight,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming
-} from "react-native-reanimated";
 
 const BillFlatList = ({ bills }: { bills: UpcomingBillType[] }) => {
   return (
@@ -33,7 +25,7 @@ const BillFlatList = ({ bills }: { bills: UpcomingBillType[] }) => {
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item, index }) => <BillCard item={item} index={index} />}
+        renderItem={({ item }) => <BillCard item={item} />}
         contentContainerStyle={styles.flatListContainer}
       />
     </View>
@@ -42,10 +34,7 @@ const BillFlatList = ({ bills }: { bills: UpcomingBillType[] }) => {
 
 export default BillFlatList;
 
-const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) => {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-
+const BillCard = ({ item }: { item: UpcomingBillType }) => {
   const cData = categoryData.find(
     (c) => c.cName === item.bill_templates?.category
   ) || {
@@ -58,34 +47,13 @@ const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) =>
   const due_date = dayjs(item.due_date).format("DD MMM YYYY");
   const daysUntilDue = dayjs(item.due_date).diff(dayjs(), 'day');
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  });
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.98, { damping: 10, stiffness: 400 });
-    opacity.value = withTiming(0.9, { duration: 50 });
-    router.push(`/bills`);
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 10, stiffness: 400 });
-    opacity.value = withTiming(1, { duration: 50 });
-  };
-
   return (
-    <AnimatedPressable
-      entering={FadeInRight.delay(index * 100)}
+    <Pressable
       style={[
         styles.billContainer,
         { borderLeftColor: cData.color },
-        animatedStyle
       ]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+      onPress={() => router.push(`/bills`)}
     >
       <View style={styles.billInfoContainer}>
         <View style={[styles.iconContainer, { backgroundColor: cData.color }]}>
@@ -121,7 +89,7 @@ const BillCard = ({ item, index }: { item: UpcomingBillType; index: number }) =>
         </Text>
         <Text style={styles.periodText}>/month</Text>
       </View>
-    </AnimatedPressable>
+    </Pressable>
   );
 };
 

@@ -97,8 +97,8 @@ export const categoryData = [
   {
     cName: "uncategorized",
     color: "#607D8B",
-    iconComponent: null,
-    iconProps: {},
+    iconComponent: Feather,
+    iconProps: { name: "help-circle", size: 24, color: "white" },
   },
 ];
 

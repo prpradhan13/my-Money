@@ -1,9 +1,10 @@
+import { formatCurrency } from "@/src/utils/helperFunction";
 import Feather from "@expo/vector-icons/Feather";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import isoWeek from "dayjs/plugin/isoWeek";
 import React, { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 dayjs.extend(isBetween);
@@ -20,6 +21,8 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
   const [monthIndex, setMonthIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedBar, setSelectedBar] = useState<{ label: string; value: number } | null>(null);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   const monthsWithData = useMemo(() => {
     const map = new Map<string, typeof data>();
@@ -100,10 +103,26 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
       return dayTotals.map((value, i) => ({
         label: `${i + 1}`,
         value,
-        frontColor: "#177AD5",
+        frontColor: i % 2 === 0 ? "#177AD5" : "lightgray",
       }));
     }
   }, [viewMode, currentMonthData, currentWeekStart, currentWeekEnd, rangeEnd]);
+
+  React.useEffect(() => {
+    if (selectedBar) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [fadeAnim, selectedBar]);
 
   return (
     <View style={styles.container}>
@@ -115,15 +134,58 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
         barWidth={22}
         noOfSections={4}
         barBorderRadius={4}
-        frontColor="lightgray"
         data={barData}
         yAxisThickness={0}
         xAxisThickness={0}
         xAxisLabelTextStyle={{ color: "#fff" }}
         yAxisTextStyle={{ color: "#fff" }}
         showFractionalValues
+        onPress={(item: { label: string; value: number }, index: number) => {
+          setSelectedBar(item);
+        }}
       />
-      
+
+      {selectedBar && (
+        <Animated.View 
+          style={[
+            styles.selectedBarInfo,
+            { opacity: fadeAnim }
+          ]}
+        >
+          <View style={styles.selectedBarHeader}>
+            <Text style={styles.selectedBarTitle}>
+              {viewMode === "week" ? "Day" : "Date"} Details
+            </Text>
+            <Pressable
+              onPress={() => setSelectedBar(null)}
+              style={styles.closeButton}
+            >
+              <Feather name="x" size={20} color="#fff" />
+            </Pressable>
+          </View>
+          
+          <View style={styles.selectedBarContent}>
+            <View style={styles.selectedBarRow}>
+              <Text style={styles.selectedBarLabel}>
+                {viewMode === "week" ? "Day" : "Date"}:
+              </Text>
+              <Text style={styles.selectedBarValue}>
+                {selectedBar.label}
+              </Text>
+            </View>
+            
+            <View style={styles.selectedBarRow}>
+              <Text style={styles.selectedBarLabel}>
+                Total Spend:
+              </Text>
+              <Text style={styles.selectedBarValue}>
+                {formatCurrency(Number(selectedBar.value))}
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+
       <Pressable
         onPress={() => {
           setViewMode((prev) => (prev === "month" ? "week" : "month"));
@@ -206,5 +268,51 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  selectedBarInfo: {
+    backgroundColor: '#3a3a3a',
+    borderRadius: 12,
+    marginTop: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+  },
+  selectedBarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#4a4a4a',
+    backgroundColor: '#323232',
+  },
+  selectedBarTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  selectedBarContent: {
+    padding: 16,
+  },
+  selectedBarRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  selectedBarLabel: {
+    color: '#a0a0a0',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  selectedBarValue: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  closeButton: {
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: '#4a4a4a',
   },
 });

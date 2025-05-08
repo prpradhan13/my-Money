@@ -35,7 +35,7 @@ const onBoradingContent: OnboardingContent[] = [
 ];
 
 const OnboardingScreen = () => {
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleDone = async () => {
