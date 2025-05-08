@@ -47,11 +47,21 @@ Deno.serve(async (req) => {
   }
 
   const today = new Date();
+  const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const year = today.getFullYear();
   const month = today.getMonth();
 
   for (const template of templates ?? []) {
-    const dueDate = new Date(year, month, template.day_of_month);
+    let dueDate = new Date(year, month, template.day_of_month);
+
+    if (dueDate < normalizedToday) {
+      const nextMonth = month + 1;
+      const nextMonthYear = nextMonth > 11 ? year + 1 : year;
+      const nextMonthIndex = nextMonth % 12;
+      const daysInNextMonth = new Date(nextMonthYear, nextMonthIndex + 1, 0).getDate();
+      const clampedDay = Math.min(template.day_of_month, daysInNextMonth);
+      dueDate = new Date(nextMonthYear, nextMonthIndex, clampedDay);
+    }
 
     const { data: existing } = await supabase
       .from("bill_instances")
@@ -76,7 +86,10 @@ Deno.serve(async (req) => {
         .single();
 
       if (error) {
-        console.error(`Failed to create bill for template ${template.id}`, error.message);
+        console.error(
+          `Failed to create bill for template ${template.id}`,
+          error.message
+        );
         continue;
       }
     }
@@ -92,17 +105,44 @@ Deno.serve(async (req) => {
       today.getDate() === reminderDate.getDate();
 
     if (isToday) {
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: template.user_id,
+          title: "Bill Reminder",
+          description: `Your payment of ₹${template.amount} for ${
+            template.title
+          } is due on ${dueDate.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+          })}. Please ensure timely payment to avoid any late fees.`,
+          type: "info",
+        });
+
+      if (notificationError) {
+        console.error(
+          `Error creating notification for ${template.user_id}:`,
+          notificationError
+        );
+        continue;
+      }
+
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('push_token')
-        .eq('id', template.user_id)
+        .from("profiles")
+        .select("push_token")
+        .eq("id", template.user_id)
         .single();
 
       if (profile?.push_token) {
         await sendPushNotification(
           profile.push_token,
           `Bill Reminder: ${template.title}`,
-          `Your payment of ₹${template.amount} for ${template.title} is due on ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}. Please ensure timely payment to avoid any late fees.`
+          `Your payment of ₹${template.amount} for ${
+            template.title
+          } is due on ${dueDate.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+          })}. Please ensure timely payment to avoid any late fees.`
         );
         console.log(`Push sent to ${template.user_id} for ${template.title}`);
       } else {
