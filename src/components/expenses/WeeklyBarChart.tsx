@@ -23,7 +23,7 @@ const WeeklyBarChart = ({ data }: WeeklyBarChartProps) => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedBar, setSelectedBar] = useState<{ label: string; value: number } | null>(null);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
+  
   const monthsWithData = useMemo(() => {
     const map = new Map<string, typeof data>();
 

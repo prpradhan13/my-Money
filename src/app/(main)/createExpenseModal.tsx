@@ -43,6 +43,8 @@ const CreateExpenseModal = () => {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useCreatePurchase();
 
+  const defaultTime = new Date().toISOString();
+
   const {
     control,
     reset,
@@ -58,7 +60,7 @@ const CreateExpenseModal = () => {
       quantity: 1,
       price: 0,
       total: 0,
-      created_at: "",
+      created_at: defaultTime,
     },
   });
 
@@ -112,13 +114,12 @@ const CreateExpenseModal = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <Pressable
-          onPress={() => router.back()}
-          style={styles.closeButton}
-        >
+        <Pressable onPress={() => router.back()} style={styles.closeButton}>
           <Feather name="x" size={22} />
         </Pressable>
-        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>Create Expense</Text>
+        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
+          Create Expense
+        </Text>
         <Pressable
           disabled={isPending}
           onPress={() => {
@@ -141,7 +142,10 @@ const CreateExpenseModal = () => {
             <AnimatedPressable
               layout={_layout}
               onPress={() => setOpenCategoryBox((prev) => !prev)}
-              style={[styles.categoryButton, { backgroundColor: selectedCategoryData?.color || "#3d3d3d" }]}
+              style={[
+                styles.categoryButton,
+                { backgroundColor: selectedCategoryData?.color || "#3d3d3d" },
+              ]}
             >
               <View style={styles.categoryButtonContent}>
                 <View style={styles.categoryIconContainer}>
@@ -171,7 +175,8 @@ const CreateExpenseModal = () => {
                       onPress={() => handleSelectCategory(cat.cName)}
                       style={[
                         styles.categoryOption,
-                        selectedCategory === cat.cName && styles.selectedCategoryOption
+                        selectedCategory === cat.cName &&
+                          styles.selectedCategoryOption,
                       ]}
                     >
                       {IconComponent && (
@@ -181,9 +186,7 @@ const CreateExpenseModal = () => {
                           color="black"
                         />
                       )}
-                      <Text style={styles.categoryOptionText}>
-                        {cat.cName}
-                      </Text>
+                      <Text style={styles.categoryOptionText}>{cat.cName}</Text>
                     </AnimatedPressable>
                   );
                 })}
@@ -225,7 +228,7 @@ const CreateExpenseModal = () => {
 
                     {showDatePicker && (
                       <DateTimePicker
-                        value={value ? new Date(Number(value)) : new Date()}
+                        value={new Date(value || defaultTime)}
                         mode="date"
                         display="default"
                         onChange={handleDateChange}
@@ -323,16 +326,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   closeButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 8,
     borderRadius: 12,
   },
   saveButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 8,
     borderRadius: 12,
   },
@@ -343,105 +346,105 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   categoryDateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
   },
   categoryContainer: {
-    width: '48.5%',
-    position: 'relative',
+    width: "48.5%",
+    position: "relative",
   },
   categoryButton: {
     borderRadius: 16,
     padding: 16,
   },
   categoryButtonContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   categoryIconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   categoryText: {
-    color: '#fff',
-    textTransform: 'capitalize',
+    color: "#fff",
+    textTransform: "capitalize",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   categoryDropdown: {
-    position: 'absolute',
-    top: '100%',
+    position: "absolute",
+    top: "100%",
     left: 0,
-    width: '100%',
+    width: "100%",
     marginTop: 8,
     zIndex: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   categoryOption: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   selectedCategoryOption: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: "#e5e7eb",
   },
   categoryOptionText: {
-    color: '#000',
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    color: "#000",
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
   dateButton: {
-    width: '48.5%',
+    width: "48.5%",
     borderRadius: 16,
     padding: 16,
-    backgroundColor: '#3d3d3d',
+    backgroundColor: "#3d3d3d",
   },
   dateButtonContent: {
-    backgroundColor: '#3d3d3d',
+    backgroundColor: "#3d3d3d",
     borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   dateText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   quantityPriceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
     marginTop: 16,
   },
   inputContainer: {
-    width: '48.5%',
+    width: "48.5%",
   },
   label: {
-    color: '#fff',
+    color: "#fff",
     marginBottom: 4,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   input: {
-    backgroundColor: '#3d3d3d',
-    color: '#fff',
+    backgroundColor: "#3d3d3d",
+    color: "#fff",
     borderRadius: 16,
     padding: 16,
     height: 56,
   },
   errorText: {
-    color: '#ef4444',
+    color: "#ef4444",
     marginTop: 4,
   },
   itemNameContainer: {
@@ -449,15 +452,15 @@ const styles = StyleSheet.create({
   },
   totalContainer: {
     marginTop: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   totalLabel: {
-    color: '#c2c2c2',
+    color: "#c2c2c2",
   },
   totalAmount: {
     fontSize: 48,
-    color: '#fff',
+    color: "#fff",
     marginTop: 8,
   },
 });

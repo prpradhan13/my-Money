@@ -24,7 +24,7 @@
     "ajv": "^8.17.1",
     "base64-arraybuffer": "^1.0.2",
     "dayjs": "^1.11.13",
-    "expo": "~53.0.8",
+    "expo": "53.0.9",
     "expo-blur": "~14.1.4",
     "expo-constants": "~17.1.5",
     "expo-device": "~7.1.4",

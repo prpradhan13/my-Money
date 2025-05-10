@@ -9,7 +9,6 @@ import { useTransactionStore } from "@/src/store/transactionStore";
 import { TCategoryItems } from "@/src/types/purchase.type";
 import {
   formatCurrency,
-  getMonthKey,
   grpByCategoryReducer,
 } from "@/src/utils/helperFunction";
 import { useGetUserMonthlySummary } from "@/src/utils/query/userQuery";
@@ -60,6 +59,7 @@ const ExpenseScreen = () => {
       return monthKey.getMonth() === new Date(selectedMonth).getMonth();
     });
   }, [userMonthlySummaryData, selectedMonth]);
+  
 
   const balanceForMonth = monthlyData?.total_added ?? 0;
   const remainingBalance = monthlyData?.balance ?? 0;

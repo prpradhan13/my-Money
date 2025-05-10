@@ -4,7 +4,7 @@
     "slug": "MyMoney",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/ios-dark.png",
     "scheme": "mymoney",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
