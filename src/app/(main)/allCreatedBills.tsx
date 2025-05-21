@@ -149,9 +149,10 @@ export default AllCreatedBillsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16
   },
   listContent: {
-    padding: 16,
+    paddingBottom: 60,
     gap: 16,
   },
   noBillsContainer: {

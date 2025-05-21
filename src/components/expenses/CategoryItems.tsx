@@ -1,7 +1,4 @@
-import {
-  _layout,
-  AnimatedPressable
-} from "@/src/constants/Animation";
+import { _layout, AnimatedPressable } from "@/src/constants/Animation";
 import { categoryData } from "@/src/constants/Colors";
 import { useAddedMoneyStore } from "@/src/store/addedMoneyStore";
 import { useMonthlySummaryStore } from "@/src/store/monthlySummaryStore";
@@ -32,7 +29,8 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const totalBalance = totalAdded - totalSpent;
 
   const categoryTotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
-  const percentUsed = totalBalance > 0 ? Math.min((categoryTotal / totalBalance) * 100, 100) : 0;
+  const percentUsed =
+    totalBalance > 0 ? Math.min((categoryTotal / totalBalance) * 100, 100) : 0;
 
   const toggleCategory = (category: string) => {
     setExpanded((prev) => ({
@@ -45,12 +43,9 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
   const IconComponent = cData[0].iconComponent;
 
   return (
-    <Animated.View 
-      layout={_layout} 
-      style={[
-        styles.container,
-        { borderLeftColor: cData[0].color }
-      ]}
+    <Animated.View
+      layout={_layout}
+      style={[styles.container, { borderLeftColor: cData[0].color }]}
     >
       <AnimatedPressable
         layout={_layout}
@@ -70,24 +65,22 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
             )}
           </View>
           <View style={styles.categoryDetails}>
-            <Text style={styles.categoryName}>
-              {category}
-            </Text>
+            <Text style={styles.categoryName}>{category}</Text>
+
             <View style={styles.percentageContainer}>
-              <View style={[styles.percentageBar, { width: `${percentUsed}%` }]} />
-              <Text style={styles.percentage}>
-                {Math.round(percentUsed)}%
-              </Text>
+              <View
+                style={[styles.percentageBar, { width: `${percentUsed}%` }]}
+              />
             </View>
           </View>
         </View>
 
         <View style={styles.totalContainer}>
           <Text style={styles.total}>{formatCurrency(categoryTotal)}</Text>
-          <Feather 
-            name={isOpen ? "chevron-up" : "chevron-down"} 
-            size={20} 
-            color="#A0A0A0" 
+          <Feather
+            name={isOpen ? "chevron-up" : "chevron-down"}
+            size={20}
+            color="#A0A0A0"
           />
         </View>
       </AnimatedPressable>
@@ -100,16 +93,9 @@ const CategoryItems = ({ category, items, month }: CategoryItemsProps) => {
           style={styles.itemsContainer}
         >
           {items.map((item, idx) => (
-            <View
-              key={`${item.item_name}-${idx}`}
-              style={styles.item}
-            >
-              <Text style={styles.itemName}>
-                {item.item_name}
-              </Text>
-              <Text style={styles.itemPrice}>
-                {formatCurrency(item.price)}
-              </Text>
+            <View key={`${item.item_name}-${idx}`} style={styles.item}>
+              <Text style={styles.itemName}>{item.item_name}</Text>
+              <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
             </View>
           ))}
         </Animated.View>
@@ -168,9 +154,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   percentage: {
-    position: "absolute",
-    right: 0,
-    top: -20,
     color: "#fff",
     fontSize: 12,
     fontWeight: "500",

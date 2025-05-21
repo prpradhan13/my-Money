@@ -113,14 +113,12 @@ export default function HomeScreen() {
     }) => (
       <View style={styles.balanceContainer}>
         <View>
-          <Text style={styles.balanceLabel}>Total Savings</Text>
-          <Text style={styles.balanceAmount}>
-            {formatCurrency(userRestBalance ?? 0)}
-          </Text>
-
           <Link href={"/allBalanceAdded"} asChild>
             <Text style={styles.balanceLabel}>Balance Details</Text>
           </Link>
+          <Text style={styles.balanceAmount}>
+            {formatCurrency(userRestBalance ?? 0)}
+          </Text>
         </View>
         <Pressable onPress={onAddMoneyPress} style={styles.addButton}>
           <Feather name="plus" color={"#fff"} size={26} />
@@ -225,7 +223,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#1A1A1A",
     borderRadius: 20,
     padding: 24,
-    height: 160,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

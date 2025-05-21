@@ -251,7 +251,7 @@ export default ExpenseScreen;
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 10,
-    paddingBottom: 0,
+    paddingBottom: 60,
   },
   headerContainer: {
     backgroundColor: "#1A1A1A",

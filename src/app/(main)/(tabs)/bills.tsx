@@ -57,7 +57,7 @@ const BillsScreen = () => {
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <UpcomingBillItem bill={item} />}
-        contentContainerStyle={{ gap: 16, paddingTop: 16 }}
+        contentContainerStyle={{ gap: 16, paddingTop: 16, paddingBottom: 60 }}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
         }

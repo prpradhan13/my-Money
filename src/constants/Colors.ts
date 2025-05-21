@@ -48,6 +48,8 @@ export const categoryColorMap: Record<string, string> = {
   gift: "#E91E63",
   invest: "#00BCD4",
   emi: "#F44336",
+  subscription: '#90a955',
+  phone: '#aeb8fe',
   uncategorized: "#607D8B",
 };
 
@@ -93,6 +95,18 @@ export const categoryData = [
     color: "#F44336",
     iconComponent: Feather,
     iconProps: { name: "credit-card", size: 24, color: "white" },
+  },
+  {
+    cName: "subscription",
+    color: "#90a955",
+    iconComponent: Feather,
+    iconProps: { name: "airplay", size: 24, color: "white" },
+  },
+  {
+    cName: "phone",
+    color: "#2ec4b6",
+    iconComponent: Feather,
+    iconProps: { name: "smartphone", size: 24, color: "white" },
   },
   {
     cName: "uncategorized",

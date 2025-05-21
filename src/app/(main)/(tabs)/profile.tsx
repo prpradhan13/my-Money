@@ -14,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ProfileScreen = () => {
   const [isCreateUpcomingBillVisible, setIsCreateUpcomingBillVisible] =
     useState(false);
-  const [selectedImage, setSelectedImage] = useState("");
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -168,7 +167,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "#1a1a1a",
   },
   userName: {
