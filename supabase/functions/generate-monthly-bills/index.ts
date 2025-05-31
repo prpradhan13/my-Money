@@ -47,7 +47,11 @@ Deno.serve(async (req) => {
   }
 
   const today = new Date();
-  const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const normalizedToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
   const year = today.getFullYear();
   const month = today.getMonth();
 
@@ -55,12 +59,15 @@ Deno.serve(async (req) => {
     let dueDate = new Date(year, month, template.day_of_month);
 
     if (dueDate < normalizedToday) {
-      const nextMonth = month + 1;
-      const nextMonthYear = nextMonth > 11 ? year + 1 : year;
-      const nextMonthIndex = nextMonth % 12;
-      const daysInNextMonth = new Date(nextMonthYear, nextMonthIndex + 1, 0).getDate();
+      // Move dueDate to the next month
+      const nextMonth = (month + 1) % 12;
+      const nextYear = month + 1 > 11 ? year + 1 : year;
+
+      // Clamp day_of_month in next month
+      const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
       const clampedDay = Math.min(template.day_of_month, daysInNextMonth);
-      dueDate = new Date(nextMonthYear, nextMonthIndex, clampedDay);
+
+      dueDate = new Date(nextYear, nextMonth, clampedDay);
     }
 
     const { data: existing } = await supabase
